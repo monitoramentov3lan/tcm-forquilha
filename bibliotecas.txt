@@ -1,0 +1,1 @@
+pip install --force-reinstall psutil requests python-telegram-bot==20.8 pywinauto pandas pyautogui matplotlib plotly apscheduler bcrypt pytz
