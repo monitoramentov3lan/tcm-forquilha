@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="300"> <title>Painel Mestre de Monitoramento</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f5f7fa; color: #333; }
+        h1 { text-align: center; color: #2c3e50; }
+        #last-updated { text-align: center; color: #7f8c8d; font-style: italic; margin-top: -15px; }
+        table { width: 95%; margin: 20px auto; border-collapse: collapse; box-shadow: 0 2px 10px rgba(0,0,0,0.1); background-color: #fff; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #34495e; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        tr:hover { background-color: #f1f1f1; }
+        .status { font-weight: bold; padding: 5px 10px; border-radius: 15px; color: white; text-align: center; }
+        .status-online { background-color: #27ae60; } /* Verde */
+        .status-stale { background-color: #f39c12; } /* Amarelo */
+        .status-offline { background-color: #e74c3c; } /* Vermelho */
+        .status-loading { background-color: #7f8c8d; } /* Cinza */
+        a { color: #3498db; text-decoration: none; font-weight: bold; }
+        a:hover { text-decoration: underline; }
+        #loading { text-align: center; font-size: 1.2em; padding: 20px; }
+    </style>
+</head>
+<body>
+
+    <h1>Painel Mestre de Monitoramento</h1>
+    <p id="last-updated">Carregando...</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Status</th>
+                <th>Garagem</th>
+                <th>Veículos Online</th>
+                <th>Veículos Offline</th>
+                <th>Arquivos TGs (Ontem)</th>
+                <th>Última Atualização (Bot)</th>
+                <th>Painel Individual</th>
+            </tr>
+        </thead>
+        <tbody id="dashboard-body">
+            <tr id="loading-row">
+                <td colspan="7" id="loading">Carregando dados dos 26 servidores...</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script src="garagens.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tbody = document.getElementById('dashboard-body');
+            const loadingRow = document.getElementById('loading-row');
+            const lastUpdatedEl = document.getElementById('last-updated');
+
+            lastUpdatedEl.textContent = `Carregando... (Página atualizou às ${new Date().toLocaleTimeString('pt-BR')})`;
+
+            // Lista de promessas para buscar todos os JSONs
+            const fetchPromises = GARAGENS.map(garagem => {
+                // Adiciona um timestamp para evitar cache
+                const url = `${garagem}_status.json?t=${new Date().getTime()}`;
+
+                return fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            // 404 ou outro erro (bot offline)
+                            throw new Error('Bot offline ou JSON não encontrado');
+                        }
+                        return response.json();
+                    })
+                    .then(data => ({ status: 'fulfilled', data }))
+                    .catch(error => ({ status: 'rejected', garagem, error: error.message }));
+            });
+
+            // 3. Espera todas as buscas terminarem
+            Promise.all(fetchPromises)
+                .then(results => {
+                    loadingRow.style.display = 'none'; // Esconde "Carregando..."
+                    let totalOnline = 0;
+                    let totalOffline = 0;
+
+                    results.forEach(result => {
+                        let statusClass = 'status-offline';
+                        let statusText = 'Offline';
+                        let rowHtml = '';
+
+                        if (result.status === 'fulfilled') {
+                            const data = result.data;
+                            const lastUpdate = new Date(data.last_update);
+                            const now = new Date();
+                            const diffHoras = (now - lastUpdate) / (1000 * 60 * 60);
+
+                            if (diffHoras > 3) { // Se o bot não atualiza há 3 horas
+                                statusClass = 'status-stale';
+                                statusText = 'Desatualizado';
+                            } else {
+                                statusClass = 'status-online';
+                                statusText = 'Online';
+                            }
+
+                            totalOnline += data.online;
+                            totalOffline += data.offline;
+
+                            rowHtml = `
+                                <tr>
+                                    <td><span class="status ${statusClass}">${statusText}</span></td>
+                                    <td>${data.garagem}</td>
+                                    <td>${data.online}</td>
+                                    <td>${data.offline}</td>
+                                    <td>${data.tgs_count}</td>
+                                    <td>${lastUpdate.toLocaleString('pt-BR')}</td>
+                                    <td><a href="COMUNICAÇÕES_${data.garagem}.html" target="_blank">Abrir</a></td>
+                                </tr>
+                            `;
+                        } else {
+                            // Bot falhou (404, etc)
+                            rowHtml = `
+                                <tr>
+                                    <td><span class="status ${statusClass}">${statusText}</span></td>
+                                    <td>${result.garagem}</td>
+                                    <td>---</td>
+                                    <td>---</td>
+                                    <td>---</td>
+                                    <td>---</td>
+                                    <td><a href="COMUNICAÇÕES_${result.garagem}.html" target="_blank">Abrir</a></td>
+                                </tr>
+                            `;
+                        }
+                        tbody.innerHTML += rowHtml;
+                    });
+
+                    // Adiciona linha de Total
+                    tbody.innerHTML += `
+                        <tr style="background-color: #34495e; color: white; font-weight: bold; font-size: 1.1em;">
+                            <td colspan="2">TOTAL GERAL</td>
+                            <td>${totalOnline}</td>
+                            <td>${totalOffline}</td>
+                            <td colspan="3"></td>
+                        </tr>
+                    `;
+                });
+        });
+    </script>
+</body>
+</html>
