@@ -23,10 +23,11 @@ const GARAGENS = [
     "TPG",
     "PRIMOR",
     "TDI",
-    "UNIÃO",
+    "UNIAO",
     "SPEED",
     "ZURIQUE",
     "PLANETA",
     "INOVARE",
     // ... adicione todas as 26 aqui
+
 ];
