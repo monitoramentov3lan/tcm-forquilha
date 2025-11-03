@@ -3,15 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="300"> <title>Painel Mestre de Monitoramento</title>
+    <title>Painel Mestre de Monitoramento</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f5f7fa; color: #333; }
         h1 { text-align: center; color: #2c3e50; }
-        #last-updated { text-align: center; color: #7f8c8d; font-style: italic; margin-top: -15px; }
+        #controls { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px; }
+        #date-picker { font-size: 1.1em; padding: 5px; border: 1px solid #ccc; border-radius: 4px; }
+        #last-updated { text-align: center; color: #7f8c8d; font-style: italic; margin-top: -10px; }
         table { width: 95%; margin: 20px auto; border-collapse: collapse; box-shadow: 0 2px 10px rgba(0,0,0,0.1); background-color: #fff; }
         th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
         th { background-color: #34495e; color: white; }
         tr:nth-child(even) { background-color: #f9f9f9; }
+        tr.total-row { background-color: #34495e; color: white; font-weight: bold; font-size: 1.1em; }
         tr:hover { background-color: #f1f1f1; }
         .status { font-weight: bold; padding: 5px 10px; border-radius: 15px; color: white; text-align: center; }
         .status-online { background-color: #27ae60; } /* Verde */
@@ -20,12 +23,17 @@
         .status-loading { background-color: #7f8c8d; } /* Cinza */
         a { color: #3498db; text-decoration: none; font-weight: bold; }
         a:hover { text-decoration: underline; }
-        #loading { text-align: center; font-size: 1.2em; padding: 20px; }
     </style>
 </head>
 <body>
 
     <h1>Painel Mestre de Monitoramento</h1>
+    
+    <div id="controls">
+        <label for="date-picker"><strong>Selecionar Data do Relatório:</strong></label>
+        <input type="date" id="date-picker">
+    </div>
+    
     <p id="last-updated">Carregando...</p>
 
     <table>
@@ -35,34 +43,59 @@
                 <th>Garagem</th>
                 <th>Veículos Online</th>
                 <th>Veículos Offline</th>
-                <th>Arquivos TGs (Ontem)</th>
+                <th>Arquivos TGs</th>
                 <th>Última Atualização (Bot)</th>
                 <th>Painel Individual</th>
             </tr>
         </thead>
         <tbody id="dashboard-body">
-            <tr id="loading-row">
-                <td colspan="7" id="loading">Carregando dados dos servidores...</td>
-            </tr>
-        </tbody>
+            </tbody>
     </table>
 
     <script src="garagens.js"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const tbody = document.getElementById('dashboard-body');
-            const loadingRow = document.getElementById('loading-row');
-            const lastUpdatedEl = document.getElementById('last-updated');
+        const tbody = document.getElementById('dashboard-body');
+        const lastUpdatedEl = document.getElementById('last-updated');
+        const datePicker = document.getElementById('date-picker');
 
-            lastUpdatedEl.textContent = `Carregando... (Página atualizou às ${new Date().toLocaleTimeString('pt-BR')})`;
+        /** Converte um objeto Date para o formato YYYYMMDD para o fetch */
+        function getFetchDateString(date) {
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            return `${yyyy}${mm}${dd}`;
+        }
+        
+        /** Converte um objeto Date para o formato YYYY-MM-DD para o input[type=date] */
+        function getPickerDateString(date) {
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        /** Função principal para carregar os dados do painel */
+        function loadDashboard(dateStringYYYYMMDD) {
+            
+            // Limpa a tabela e mostra o carregamento
+            tbody.innerHTML = `
+                <tr id="loading-row">
+                    <td colspan="7" style="text-align: center; font-size: 1.2em; padding: 20px;">
+                        Carregando dados de ${dateStringYYYYMMDD}...
+                    </td>
+                </tr>
+            `;
+            lastUpdatedEl.textContent = `Página atualizada às ${new Date().toLocaleTimeString('pt-BR')}`;
 
             const fetchPromises = GARAGENS.map(garagem => {
-                const url = `${garagem}_status.json?t=${new Date().getTime()}`;
+                // (MELHORIA: Usa a data selecionada para construir a URL)
+                const url = `${garagem}_status_${dateStringYYYYMMDD}.json?t=${new Date().getTime()}`;
+                
                 return fetch(url)
                     .then(response => {
                         if (!response.ok) {
-                            throw new Error('Bot offline ou JSON não encontrado');
+                            throw new Error('Relatório não encontrado');
                         }
                         return response.json();
                     })
@@ -72,45 +105,33 @@
 
             Promise.all(fetchPromises)
                 .then(results => {
-                    loadingRow.style.display = 'none';
+                    tbody.innerHTML = ''; // Limpa o "Carregando..."
                     
-                    // --- MELHORIA 1: Inicializa o contador total de TGs ---
                     let totalOnline = 0;
                     let totalOffline = 0;
-                    let totaltgs_count = 0; // <-- ADICIONADO
+                    let totaltgs_count = 0;
 
                     results.forEach(result => {
                         let statusClass = 'status-offline';
-                        let statusText = 'Offline';
+                        let statusText = 'Sem Dados';
                         let rowHtml = '';
 
                         if (result.status === 'fulfilled') {
                             const data = result.data;
                             const lastUpdate = new Date(data.last_update);
-                            const now = new Date();
-
-                            // --- MELHORIA 2: Nova lógica de "Desatualizado" ---
-                            // Define o "prazo" de atualização: 07:30 da manhã de HOJE.
-                            const cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 7, 30, 0);
-
-                            if (lastUpdate > cutoff) {
-                                // Se foi atualizado DEPOIS das 07:30 de hoje, está online.
-                                statusClass = 'status-online';
-                                statusText = 'Online';
-                            } else if (now < cutoff) {
-                                // Se AGORA AINDA É ANTES das 07:30, o JSON de ontem ainda é válido.
-                                statusClass = 'status-online';
-                                statusText = 'Online (Aguardando)';
+                            
+                            // (MELHORIA: Lógica de status mais simples baseada nos dados do dia)
+                            if (data.offline === "ERRO") {
+                                statusClass = 'status-offline';
+                                statusText = 'Falha no Bot';
                             } else {
-                                // Se AGORA JÁ PASSOU das 07:30 e o JSON é de antes disso (ontem), está desatualizado.
-                                statusClass = 'status-stale';
-                                statusText = 'Desatualizado';
+                                statusClass = 'status-online';
+                                statusText = 'OK';
                             }
-                            // --- Fim da nova lógica ---
-
+                            
                             totalOnline += data.online;
                             totalOffline += data.offline;
-                            totaltgs_count += data.tgs_count; // <-- ADICIONADO
+                            totaltgs_count += data.tgs_count;
 
                             rowHtml = `
                                 <tr>
@@ -124,7 +145,7 @@
                                 </tr>
                             `;
                         } else {
-                            // Bot falhou (404, etc)
+                            // JSON não encontrado
                             rowHtml = `
                                 <tr>
                                     <td><span class="status ${statusClass}">${statusText}</span></td>
@@ -140,9 +161,9 @@
                         tbody.innerHTML += rowHtml;
                     });
 
-                    // --- MELHORIA 1 (Cont.): Adiciona a célula do total de TGs ---
+                    // Adiciona linha de Total
                     tbody.innerHTML += `
-                        <tr style="background-color: #34495e; color: white; font-weight: bold; font-size: 1.1em;">
+                        <tr class="total-row">
                             <td colspan="2">TOTAL GERAL</td>
                             <td>${totalOnline}</td>
                             <td>${totalOffline}</td>
@@ -151,7 +172,30 @@
                         </tr>
                     `;
                 });
+        }
+        
+        // --- Lógica de Inicialização ---
+        
+        // (MELHORIA: Define a data padrão como ONTEM)
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        const defaultPickerDate = getPickerDateString(yesterday);
+        const defaultFetchDate = getFetchDateString(yesterday);
+
+        // Define o valor padrão do calendário
+        datePicker.value = defaultPickerDate;
+        
+        // Carrega o painel com a data de ontem
+        loadDashboard(defaultFetchDate);
+        
+        // Adiciona o evento para recarregar quando a data mudar
+        datePicker.addEventListener('change', () => {
+            const newDate = datePicker.value.replaceAll('-', '');
+            loadDashboard(newDate);
         });
+
     </script>
 </body>
 </html>
