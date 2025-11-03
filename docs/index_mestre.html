@@ -42,7 +42,7 @@
         </thead>
         <tbody id="dashboard-body">
             <tr id="loading-row">
-                <td colspan="7" id="loading">Carregando dados dos 26 servidores...</td>
+                <td colspan="7" id="loading">Carregando dados dos servidores...</td>
             </tr>
         </tbody>
     </table>
@@ -57,15 +57,11 @@
 
             lastUpdatedEl.textContent = `Carregando... (Página atualizou às ${new Date().toLocaleTimeString('pt-BR')})`;
 
-            // Lista de promessas para buscar todos os JSONs
             const fetchPromises = GARAGENS.map(garagem => {
-                // Adiciona um timestamp para evitar cache
                 const url = `${garagem}_status.json?t=${new Date().getTime()}`;
-
                 return fetch(url)
                     .then(response => {
                         if (!response.ok) {
-                            // 404 ou outro erro (bot offline)
                             throw new Error('Bot offline ou JSON não encontrado');
                         }
                         return response.json();
@@ -74,12 +70,14 @@
                     .catch(error => ({ status: 'rejected', garagem, error: error.message }));
             });
 
-            // 3. Espera todas as buscas terminarem
             Promise.all(fetchPromises)
                 .then(results => {
-                    loadingRow.style.display = 'none'; // Esconde "Carregando..."
+                    loadingRow.style.display = 'none';
+                    
+                    // --- MELHORIA 1: Inicializa o contador total de TGs ---
                     let totalOnline = 0;
                     let totalOffline = 0;
+                    let totaltgs_count = 0; // <-- ADICIONADO
 
                     results.forEach(result => {
                         let statusClass = 'status-offline';
@@ -90,19 +88,29 @@
                             const data = result.data;
                             const lastUpdate = new Date(data.last_update);
                             const now = new Date();
-                            const diffHoras = (now - lastUpdate) / (1000 * 60 * 60);
 
-                            if (diffHoras > 3) { // Se o bot não atualiza há 3 horas
-                                statusClass = 'status-stale';
-                                statusText = 'Desatualizado';
-                            } else {
+                            // --- MELHORIA 2: Nova lógica de "Desatualizado" ---
+                            // Define o "prazo" de atualização: 07:30 da manhã de HOJE.
+                            const cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 7, 30, 0);
+
+                            if (lastUpdate > cutoff) {
+                                // Se foi atualizado DEPOIS das 07:30 de hoje, está online.
                                 statusClass = 'status-online';
                                 statusText = 'Online';
+                            } else if (now < cutoff) {
+                                // Se AGORA AINDA É ANTES das 07:30, o JSON de ontem ainda é válido.
+                                statusClass = 'status-online';
+                                statusText = 'Online (Aguardando)';
+                            } else {
+                                // Se AGORA JÁ PASSOU das 07:30 e o JSON é de antes disso (ontem), está desatualizado.
+                                statusClass = 'status-stale';
+                                statusText = 'Desatualizado';
                             }
+                            // --- Fim da nova lógica ---
 
                             totalOnline += data.online;
                             totalOffline += data.offline;
-                            totaltgs_count += data.tgs_count;
+                            totaltgs_count += data.tgs_count; // <-- ADICIONADO
 
                             rowHtml = `
                                 <tr>
@@ -132,19 +140,18 @@
                         tbody.innerHTML += rowHtml;
                     });
 
-                    // Adiciona linha de Total
+                    // --- MELHORIA 1 (Cont.): Adiciona a célula do total de TGs ---
                     tbody.innerHTML += `
                         <tr style="background-color: #34495e; color: white; font-weight: bold; font-size: 1.1em;">
                             <td colspan="2">TOTAL GERAL</td>
                             <td>${totalOnline}</td>
                             <td>${totalOffline}</td>
                             <td>${totaltgs_count}</td>
-                            <td colspan="3"></td>
+                            <td colspan="2"></td> 
                         </tr>
                     `;
                 });
         });
     </script>
 </body>
-
 </html>
