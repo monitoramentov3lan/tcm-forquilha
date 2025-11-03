@@ -102,6 +102,7 @@
 
                             totalOnline += data.online;
                             totalOffline += data.offline;
+                            totaltgs_count += data.tgs_count;
 
                             rowHtml = `
                                 <tr>
@@ -137,6 +138,7 @@
                             <td colspan="2">TOTAL GERAL</td>
                             <td>${totalOnline}</td>
                             <td>${totalOffline}</td>
+                            <td>${totaltgs_count}</td>
                             <td colspan="3"></td>
                         </tr>
                     `;
@@ -144,4 +146,5 @@
         });
     </script>
 </body>
+
 </html>
