@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="300"> <title>Painel Mestre de Monitoramento</title>
+    <meta http-equiv="refresh" content="300"> <title>Monitoramento - V3LAN</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f5f7fa; color: #333; }
         h1 { text-align: center; color: #2c3e50; }
@@ -25,7 +25,7 @@
 </head>
 <body>
 
-    <h1>Painel Mestre de Monitoramento</h1>
+    <h1>Monitoramento - V3LAN</h1>
     <p id="last-updated">Carregando...</p>
 
     <table>
@@ -33,11 +33,11 @@
             <tr>
                 <th>Status</th>
                 <th>Garagem</th>
-                <th>Veículos Online</th>
-                <th>Veículos Offline</th>
-                <th>Arquivos TGs (Ontem)</th>
+                <th>Online</th>
+                <th>Offline</th>
+                <th>TGs (Ontem)</th>
                 <th>Última Atualização (Bot)</th>
-                <th>Painel Individual</th>
+                <th>Painel</th>
             </tr>
         </thead>
         <tbody id="dashboard-body">
@@ -58,7 +58,6 @@
             lastUpdatedEl.textContent = `Carregando... (Página atualizou às ${new Date().toLocaleTimeString('pt-BR')})`;
 
             const fetchPromises = GARAGENS.map(garagem => {
-                // (REVERTIDO: Volta a buscar o ficheiro JSON simples, sem data)
                 const url = `${garagem}_status.json?t=${new Date().getTime()}`;
                 return fetch(url)
                     .then(response => {
@@ -81,30 +80,48 @@
                         let statusClass = 'status-offline';
                         let statusText = 'Offline';
                         let rowHtml = '';
+                        let panelLink = '---';
+                        let tgLink = '---';
 
                         if (result.status === 'fulfilled') {
                             const data = result.data;
                             const lastUpdate = new Date(data.last_update);
                             const now = new Date();
                             
-                            // (REVERTIDO: Lógica original de "Desatualizado")
-                            const diffHoras = (now - lastUpdate) / (1000 * 60 * 60);
+                            const cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 7, 30, 0);
 
                             if (data.offline === "ERRO") {
                                 statusClass = 'status-offline';
                                 statusText = 'Falha no Bot';
-                            } else if (diffHoras > 3) { // Se o bot não atualiza há 3 horas
-                                statusClass = 'status-stale';
-                                statusText = 'Desatualizado';
-                            } else {
+                            } else if (lastUpdate > cutoff) {
                                 statusClass = 'status-online';
                                 statusText = 'Online';
+                            } else if (now < cutoff) {
+                                statusClass = 'status-online';
+                                statusText = 'Online (Aguardando)';
+                            } else {
+                                statusClass = 'status-stale';
+                                statusText = 'Desatualizado';
                             }
-                            // --- Fim da lógica revertida ---
 
-                            totalOnline += data.online;
-                            totalOffline += data.offline;
-                            totaltgs_count += data.tgs_count;
+                            totalOnline += (typeof data.online === 'number' ? data.online : 0);
+                            totalOffline += (typeof data.offline === 'number' ? data.offline : 0);
+                            totaltgs_count += (typeof data.tgs_count === 'number' ? data.tgs_count : 0);
+
+                            // (MELHORIA: Constrói o link do Painel Individual)
+                            if(data.panel_url && data.panel_url !== "N/A") {
+                                panelLink = `<a href="${data.panel_url}" target="_blank">Abrir</a>`;
+                            } else {
+                                panelLink = `<a href="COMUNICAÇÕES_${data.garagem}.html" target="_blank">Abrir (Local)</a>`;
+                            }
+                            
+                            // (MELHORIA: Constrói o link de Download do CSV dos TGs)
+                            // (Nota: Isto assume que o CSV está no mesmo repo mestre 'tcm-forquilha')
+                            if(data.tgs_filename && data.tgs_filename !== "N/A") {
+                                tgLink = `<a href="${data.tgs_filename}" download>${data.tgs_count} (Baixar)</a>`;
+                            } else {
+                                tgLink = data.tgs_count;
+                            }
 
                             rowHtml = `
                                 <tr>
@@ -112,9 +129,9 @@
                                     <td>${data.garagem}</td>
                                     <td>${data.online}</td>
                                     <td>${data.offline}</td>
-                                    <td>${data.tgs_count}</td>
+                                    <td>${tgLink}</td>
                                     <td>${lastUpdate.toLocaleString('pt-BR')}</td>
-                                    <td><a href="COMUNICAÇÕES_${data.garagem}.html" target="_blank">Abrir</a></td>
+                                    <td>${panelLink}</td>
                                 </tr>
                             `;
                         } else {
@@ -127,7 +144,7 @@
                                     <td>---</td>
                                     <td>---</td>
                                     <td>---</td>
-                                    <td><a href="COMUNICAÇÕES_${result.garagem}.html" target="_blank">Abrir</a></td>
+                                    <td><a href="COMUNICAÇÕES_${result.garagem}.html" target="_blank">Abrir (Cache)</a></td>
                                 </tr>
                             `;
                         }
