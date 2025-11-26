@@ -8,17 +8,18 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f5f7fa; color: #333; }
         h1 { text-align: center; color: #2c3e50; }
         #last-updated { text-align: center; color: #7f8c8d; font-style: italic; margin-top: -15px; }
-        table { width: 95%; margin: 20px auto; border-collapse: collapse; box-shadow: 0 2px 10px rgba(0,0,0,0.1); background-color: #fff; }
-        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
+        table { width: 98%; margin: 20px auto; border-collapse: collapse; box-shadow: 0 2px 10px rgba(0,0,0,0.1); background-color: #fff; font-size: 0.9em; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #ddd; text-align: center;}
+        th:nth-child(2), td:nth-child(2) { text-align: left; } /* Alinha nome da garagem a esquerda */
         th { background-color: #34495e; color: white; }
         tr:nth-child(even) { background-color: #f9f9f9; }
         tr.total-row { background-color: #34495e; color: white; font-weight: bold; font-size: 1.1em; }
         tr:hover { background-color: #f1f1f1; }
-        .status { font-weight: bold; padding: 5px 10px; border-radius: 15px; color: white; text-align: center; }
+        .status { font-weight: bold; padding: 5px 10px; border-radius: 15px; color: white; display: inline-block; min-width: 80px; }
         .status-online { background-color: #27ae60; } /* Verde */
         .status-stale { background-color: #f39c12; } /* Amarelo */
         .status-offline { background-color: #e74c3c; } /* Vermelho */
-        .status-loading { background-color: #7f8c8d; } /* Cinza */
+        .tg-cell { font-family: monospace; font-size: 1.1em; }
         a { color: #3498db; text-decoration: none; font-weight: bold; }
         a:hover { text-decoration: underline; }
     </style>
@@ -35,14 +36,16 @@
                 <th>Garagem</th>
                 <th>Online</th>
                 <th>Offline</th>
-                <th>TGs (Ontem)</th>
-                <th>Última Atualização (Bot)</th>
+                <th>TGs<br><small>(Ontem)</small></th>
+                <th>TGs<br><small>(-2 Dias)</small></th>
+                <th>TGs<br><small>(-3 Dias)</small></th>
+                <th>Última Atualização</th>
                 <th>Painel</th>
             </tr>
         </thead>
         <tbody id="dashboard-body">
             <tr id="loading-row">
-                <td colspan="7" style="text-align: center; font-size: 1.2em; padding: 20px;">Carregando dados dos servidores...</td>
+                <td colspan="9" style="text-align: center; font-size: 1.2em; padding: 20px;">Carregando dados dos servidores...</td>
             </tr>
         </tbody>
     </table>
@@ -74,22 +77,29 @@
                     
                     let totalOnline = 0;
                     let totalOffline = 0;
-                    let totaltgs_count = 0; 
+                    // Totais para os 3 dias
+                    let totalTGs_D1 = 0; 
+                    let totalTGs_D2 = 0;
+                    let totalTGs_D3 = 0;
 
                     results.forEach(result => {
                         let statusClass = 'status-offline';
                         let statusText = 'Offline';
                         let rowHtml = '';
                         let panelLink = '---';
-                        let tgLink = '---';
+                        
+                        // Links para os TGs dos 3 dias
+                        let tgLink1 = '0';
+                        let tgLink2 = '0';
+                        let tgLink3 = '0';
 
                         if (result.status === 'fulfilled') {
                             const data = result.data;
                             const lastUpdate = new Date(data.last_update);
                             const now = new Date();
-                            
                             const cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 7, 30, 0);
 
+                            // Lógica de Status
                             if (data.offline === "ERRO") {
                                 statusClass = 'status-offline';
                                 statusText = 'Falha no Bot';
@@ -98,7 +108,7 @@
                                 statusText = 'Online';
                             } else if (now < cutoff) {
                                 statusClass = 'status-online';
-                                statusText = 'Online (Aguardando)';
+                                statusText = 'Aguardando';
                             } else {
                                 statusClass = 'status-stale';
                                 statusText = 'Desatualizado';
@@ -106,45 +116,74 @@
 
                             totalOnline += (typeof data.online === 'number' ? data.online : 0);
                             totalOffline += (typeof data.offline === 'number' ? data.offline : 0);
-                            totaltgs_count += (typeof data.tgs_count === 'number' ? data.tgs_count : 0);
 
-                            // (MELHORIA: Constrói o link do Painel Individual)
+                            // --- LÓGICA DE TGS (HISTÓRICO) ---
+                            // Verifica se existe o novo formato "tgs_history"
+                            if (data.tgs_history && Array.isArray(data.tgs_history)) {
+                                // Dia 1 (Ontem)
+                                if (data.tgs_history[0]) {
+                                    const d1 = data.tgs_history[0];
+                                    totalTGs_D1 += d1.count;
+                                    tgLink1 = d1.filename !== "N/A" ? `<a href="${d1.filename}" download title="${d1.data}">${d1.count}</a>` : d1.count;
+                                }
+                                // Dia 2
+                                if (data.tgs_history[1]) {
+                                    const d2 = data.tgs_history[1];
+                                    totalTGs_D2 += d2.count;
+                                    tgLink2 = d2.filename !== "N/A" ? `<a href="${d2.filename}" download title="${d2.data}">${d2.count}</a>` : d2.count;
+                                }
+                                // Dia 3
+                                if (data.tgs_history[2]) {
+                                    const d3 = data.tgs_history[2];
+                                    totalTGs_D3 += d3.count;
+                                    tgLink3 = d3.filename !== "N/A" ? `<a href="${d3.filename}" download title="${d3.data}">${d3.count}</a>` : d3.count;
+                                }
+                            } else {
+                                // Fallback para versões antigas do bot que usam "tgs_count"
+                                const count = (typeof data.tgs_count === 'number' ? data.tgs_count : 0);
+                                totalTGs_D1 += count;
+                                if(data.tgs_filename && data.tgs_filename !== "N/A") {
+                                    tgLink1 = `<a href="${data.tgs_filename}" download>${count}</a>`;
+                                } else {
+                                    tgLink1 = count;
+                                }
+                                tgLink2 = "-";
+                                tgLink3 = "-";
+                            }
+
+                            // Link do Painel
                             if(data.panel_url && data.panel_url !== "N/A") {
                                 panelLink = `<a href="${data.panel_url}" target="_blank">Abrir</a>`;
                             } else {
                                 panelLink = `<a href="COMUNICAÇÕES_${data.garagem}.html" target="_blank">Abrir (Local)</a>`;
                             }
                             
-                            // (MELHORIA: Constrói o link de Download do CSV dos TGs)
-                            // (Nota: Isto assume que o CSV está no mesmo repo mestre 'tcm-forquilha')
-                            if(data.tgs_filename && data.tgs_filename !== "N/A") {
-                                tgLink = `<a href="${data.tgs_filename}" download>${data.tgs_count} (Baixar)</a>`;
-                            } else {
-                                tgLink = data.tgs_count;
-                            }
-
                             rowHtml = `
                                 <tr>
                                     <td><span class="status ${statusClass}">${statusText}</span></td>
-                                    <td>${data.garagem}</td>
+                                    <td style="text-align: left; font-weight: 600;">${data.garagem}</td>
                                     <td>${data.online}</td>
                                     <td>${data.offline}</td>
-                                    <td>${tgLink}</td>
+                                    <td class="tg-cell">${tgLink1}</td>
+                                    <td class="tg-cell">${tgLink2}</td>
+                                    <td class="tg-cell">${tgLink3}</td>
                                     <td>${lastUpdate.toLocaleString('pt-BR')}</td>
                                     <td>${panelLink}</td>
                                 </tr>
                             `;
                         } else {
-                            // Bot falhou (404, etc)
+                            // Erro de Fetch
                             rowHtml = `
                                 <tr>
                                     <td><span class="status ${statusClass}">${statusText}</span></td>
-                                    <td>${result.garagem}</td>
-                                    <td>---</td>
-                                    <td>---</td>
-                                    <td>---</td>
-                                    <td>---</td>
-                                    <td><a href="COMUNICAÇÕES_${result.garagem}.html" target="_blank">Abrir (Cache)</a></td>
+                                    <td style="text-align: left;">${result.garagem}</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>Falha Conexão</td>
+                                    <td>-</td>
                                 </tr>
                             `;
                         }
@@ -154,10 +193,12 @@
                     // Adiciona linha de Total
                     tbody.innerHTML += `
                         <tr class="total-row">
-                            <td colspan="2">TOTAL GERAL</td>
+                            <td colspan="2" style="text-align: right; padding-right: 20px;">TOTAIS:</td>
                             <td>${totalOnline}</td>
                             <td>${totalOffline}</td>
-                            <td>${totaltgs_count}</td>
+                            <td>${totalTGs_D1}</td>
+                            <td>${totalTGs_D2}</td>
+                            <td>${totalTGs_D3}</td>
                             <td colspan="2"></td> 
                         </tr>
                     `;
