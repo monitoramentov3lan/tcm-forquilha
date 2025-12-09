@@ -3,207 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="300"> <title>Painel Mestre de Monitoramento</title>
+    <meta http-equiv="refresh" content="300"> 
+    <title>Painel Mestre - Histórico Mensal</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f5f7fa; color: #333; }
-        h1 { text-align: center; color: #2c3e50; }
-        #last-updated { text-align: center; color: #7f8c8d; font-style: italic; margin-top: -15px; }
-        table { width: 98%; margin: 20px auto; border-collapse: collapse; box-shadow: 0 2px 10px rgba(0,0,0,0.1); background-color: #fff; font-size: 0.9em; }
-        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #ddd; text-align: center;}
-        th:nth-child(2), td:nth-child(2) { text-align: left; } /* Alinha nome da garagem a esquerda */
-        th { background-color: #34495e; color: white; }
+        
+        /* Cabeçalho e Controle de Data */
+        .header-container { text-align: center; margin-bottom: 20px; }
+        h1 { margin: 0 0 10px 0; color: #2c3e50; }
+        .last-updated { color: #7f8c8d; font-style: italic; font-size: 0.9em; margin-bottom: 15px; }
+        
+        .date-control { 
+            background: white; padding: 15px; border-radius: 8px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: inline-block;
+        }
+        .date-control label { font-weight: bold; margin-right: 8px; color: #2c3e50; }
+        .date-control input { padding: 8px; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 1em; }
+        .date-control button { 
+            padding: 8px 15px; background-color: #3498db; color: white; 
+            border: none; border-radius: 4px; cursor: pointer; font-size: 1em; margin-left: 10px; 
+            transition: background 0.2s;
+        }
+        .date-control button:hover { background-color: #2980b9; }
+
+        /* Tabela */
+        table { width: 100%; max-width: 1200px; margin: 0 auto; border-collapse: collapse; background-color: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        th, td { padding: 12px 15px; text-align: center; border-bottom: 1px solid #ddd; }
+        th { background-color: #34495e; color: white; position: sticky; top: 0; z-index: 10; }
+        th:nth-child(2), td:nth-child(2) { text-align: left; } /* Alinha nome da garagem */
+        
+        /* Coluna Dinâmica de TGs (Destaque) */
+        th.tg-column { background-color: #2c3e50; border-left: 2px solid #ecf0f1; border-right: 2px solid #ecf0f1; }
+        td.tg-column-cell { background-color: #fdfefe; border-left: 2px solid #eee; border-right: 2px solid #eee; font-weight: bold; color: #2980b9; font-family: monospace; font-size: 1.1em; }
+
         tr:nth-child(even) { background-color: #f9f9f9; }
-        tr.total-row { background-color: #34495e; color: white; font-weight: bold; font-size: 1.1em; }
         tr:hover { background-color: #f1f1f1; }
-        .status { font-weight: bold; padding: 5px 10px; border-radius: 15px; color: white; display: inline-block; min-width: 80px; }
-        .status-online { background-color: #27ae60; } /* Verde */
-        .status-stale { background-color: #f39c12; } /* Amarelo */
-        .status-offline { background-color: #e74c3c; } /* Vermelho */
-        .tg-cell { font-family: monospace; font-size: 1.1em; }
-        a { color: #3498db; text-decoration: none; font-weight: bold; }
+        
+        /* Status Badges */
+        .status { padding: 5px 10px; border-radius: 15px; color: white; font-weight: bold; font-size: 0.85em; display: inline-block; min-width: 80px; }
+        .online { background-color: #27ae60; }
+        .offline { background-color: #e74c3c; }
+        .stale { background-color: #f39c12; }
+        
+        a { color: #3498db; text-decoration: none; font-weight: 600; }
         a:hover { text-decoration: underline; }
+        .total-row { background-color: #34495e; color: white; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <h1>Painel Mestre de Monitoramento</h1>
-    <p id="last-updated">Carregando...</p>
+    <div class="header-container">
+        <h1>Painel Mestre de Monitoramento</h1>
+        <div class="last-updated" id="last-updated-text">Carregando sistema...</div>
+
+        <div class="date-control">
+            <label for="date-selector">📅 Visualizar TGs do dia:</label>
+            <input type="date" id="date-selector">
+            <button onclick="renderTable()">Atualizar Coluna</button>
+        </div>
+    </div>
 
     <table>
         <thead>
             <tr>
-                <th>Status</th>
-                <th>Garagem</th>
-                <th>Online</th>
-                <th>Offline</th>
-                <th>TGs<br><small>(Ontem)</small></th>
-                <th>TGs<br><small>(-2 Dias)</small></th>
-                <th>TGs<br><small>(-3 Dias)</small></th>
-                <th>Última Atualização</th>
-                <th>Painel</th>
+                <th width="10%">Status</th>
+                <th width="25%">Garagem</th>
+                <th width="10%">Online</th>
+                <th width="10%">Offline</th>
+                <th class="tg-column" width="20%">TGs <br><small id="tg-header-date">(Selecione)</small></th>
+                <th width="15%">Última Atualização</th>
+                <th width="10%">Painel</th>
             </tr>
         </thead>
-        <tbody id="dashboard-body">
-            <tr id="loading-row">
-                <td colspan="9" style="text-align: center; font-size: 1.2em; padding: 20px;">Carregando dados dos servidores...</td>
-            </tr>
+        <tbody id="table-body">
+            <tr><td colspan="7">Carregando dados...</td></tr>
         </tbody>
     </table>
 
-    <script src="garagens.js"></script>
+    <script src="garagens.js"></script> 
 
     <script>
+        let GLOBAL_DATA = []; // Armazena os JSONs baixados
+
         document.addEventListener('DOMContentLoaded', () => {
-            const tbody = document.getElementById('dashboard-body');
-            const lastUpdatedEl = document.getElementById('last-updated');
-            const loadingRow = document.getElementById('loading-row');
+            // 1. Define a data padrão para "Ontem"
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            document.getElementById('date-selector').valueAsDate = yesterday;
 
-            lastUpdatedEl.textContent = `Carregando... (Página atualizou às ${new Date().toLocaleTimeString('pt-BR')})`;
+            // 2. Inicia o download dos dados
+            fetchAllData();
+        });
 
-            const fetchPromises = GARAGENS.map(garagem => {
-                const url = `${garagem}_status.json?t=${new Date().getTime()}`;
-                return fetch(url)
-                    .then(response => {
-                        if (!response.ok) { throw new Error('Bot offline ou JSON não encontrado'); }
-                        return response.json();
-                    })
-                    .then(data => ({ status: 'fulfilled', data }))
-                    .catch(error => ({ status: 'rejected', garagem, error: error.message }));
+        function fetchAllData() {
+            if (typeof GARAGENS === 'undefined') {
+                document.getElementById('table-body').innerHTML = '<tr><td colspan="7" style="color:red">Erro: arquivo garagens.js não carregado.</td></tr>';
+                return;
+            }
+
+            const promises = GARAGENS.map(garagem => {
+                // Adiciona timestamp para evitar cache do navegador
+                return fetch(`${garagem}_status.json?t=${Date.now()}`)
+                    .then(res => res.ok ? res.json() : null)
+                    .then(data => ({ name: garagem, data: data, status: data ? 'ok' : 'error' }))
+                    .catch(err => ({ name: garagem, data: null, status: 'error' }));
             });
 
-            Promise.all(fetchPromises)
-                .then(results => {
-                    loadingRow.style.display = 'none';
+            Promise.all(promises).then(results => {
+                GLOBAL_DATA = results;
+                document.getElementById('last-updated-text').textContent = `Dados atualizados às ${new Date().toLocaleTimeString()}`;
+                renderTable(); // Desenha a tabela após baixar tudo
+            });
+        }
+
+        // Função auxiliar: Converte YYYY-MM-DD (Input) para DD/MM/YYYY (JSON)
+        function formatInputToJSONDate(isoDate) {
+            if (!isoDate) return null;
+            const [year, month, day] = isoDate.split('-');
+            return `${day}/${month}/${year}`;
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('table-body');
+            const selectedDateISO = document.getElementById('date-selector').value;
+            const targetDateBR = formatInputToJSONDate(selectedDateISO); // Ex: "09/12/2025"
+            
+            // Atualiza o título da coluna
+            document.getElementById('tg-header-date').textContent = targetDateBR ? `(${targetDateBR})` : "(Data Inválida)";
+
+            tbody.innerHTML = '';
+            
+            let totalOnline = 0, totalOffline = 0, totalTGs = 0;
+
+            GLOBAL_DATA.forEach(item => {
+                let html = '';
+                
+                if (item.status === 'error' || !item.data) {
+                    // Linha de Erro
+                    html = `
+                        <tr>
+                            <td><span class="status offline">OFF</span></td>
+                            <td>${item.name}</td>
+                            <td>-</td><td>-</td>
+                            <td class="tg-column-cell">-</td>
+                            <td>Falha Leitura</td>
+                            <td>-</td>
+                        </tr>`;
+                } else {
+                    const d = item.data;
                     
-                    let totalOnline = 0;
-                    let totalOffline = 0;
-                    // Totais para os 3 dias
-                    let totalTGs_D1 = 0; 
-                    let totalTGs_D2 = 0;
-                    let totalTGs_D3 = 0;
+                    // Lógica de Status (Verde/Amarelo/Vermelho)
+                    const lastUp = new Date(d.last_update);
+                    const now = new Date();
+                    const cutoff = new Date();
+                    cutoff.setHours(7, 30, 0, 0); // Considera desatualizado se for antes das 07:30 de hoje
+                    
+                    let stClass = 'online';
+                    let stText = 'Online';
+                    
+                    if (d.offline === "ERRO") { stClass = 'offline'; stText = 'Erro Bot'; }
+                    else if (now > cutoff && lastUp < cutoff) { stClass = 'stale'; stText = 'Antigo'; }
 
-                    results.forEach(result => {
-                        let statusClass = 'status-offline';
-                        let statusText = 'Offline';
-                        let rowHtml = '';
-                        let panelLink = '---';
+                    // --- A MÁGICA DO HISTÓRICO ---
+                    // Procura dentro do array de 30 dias a data específica
+                    let tgContent = '<span style="color:#ccc; font-weight:normal">N/A</span>';
+                    
+                    if (d.tgs_history && Array.isArray(d.tgs_history)) {
+                        const historyFound = d.tgs_history.find(h => h.data === targetDateBR);
                         
-                        // Links para os TGs dos 3 dias
-                        let tgLink1 = '0';
-                        let tgLink2 = '0';
-                        let tgLink3 = '0';
-
-                        if (result.status === 'fulfilled') {
-                            const data = result.data;
-                            const lastUpdate = new Date(data.last_update);
-                            const now = new Date();
-                            const cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 7, 30, 0);
-
-                            // Lógica de Status
-                            if (data.offline === "ERRO") {
-                                statusClass = 'status-offline';
-                                statusText = 'Falha no Bot';
-                            } else if (lastUpdate > cutoff) {
-                                statusClass = 'status-online';
-                                statusText = 'Online';
-                            } else if (now < cutoff) {
-                                statusClass = 'status-online';
-                                statusText = 'Aguardando';
+                        if (historyFound) {
+                            totalTGs += historyFound.count;
+                            if (historyFound.filename && historyFound.filename !== "N/A") {
+                                // Se tiver arquivo, cria link
+                                tgContent = `<a href="${historyFound.filename}" download>${historyFound.count}</a>`;
                             } else {
-                                statusClass = 'status-stale';
-                                statusText = 'Desatualizado';
+                                // Se só tiver contagem
+                                tgContent = historyFound.count;
                             }
-
-                            totalOnline += (typeof data.online === 'number' ? data.online : 0);
-                            totalOffline += (typeof data.offline === 'number' ? data.offline : 0);
-
-                            // --- LÓGICA DE TGS (HISTÓRICO) ---
-                            // Verifica se existe o novo formato "tgs_history"
-                            if (data.tgs_history && Array.isArray(data.tgs_history)) {
-                                // Dia 1 (Ontem)
-                                if (data.tgs_history[0]) {
-                                    const d1 = data.tgs_history[0];
-                                    totalTGs_D1 += d1.count;
-                                    tgLink1 = d1.filename !== "N/A" ? `<a href="${d1.filename}" download title="${d1.data}">${d1.count}</a>` : d1.count;
-                                }
-                                // Dia 2
-                                if (data.tgs_history[1]) {
-                                    const d2 = data.tgs_history[1];
-                                    totalTGs_D2 += d2.count;
-                                    tgLink2 = d2.filename !== "N/A" ? `<a href="${d2.filename}" download title="${d2.data}">${d2.count}</a>` : d2.count;
-                                }
-                                // Dia 3
-                                if (data.tgs_history[2]) {
-                                    const d3 = data.tgs_history[2];
-                                    totalTGs_D3 += d3.count;
-                                    tgLink3 = d3.filename !== "N/A" ? `<a href="${d3.filename}" download title="${d3.data}">${d3.count}</a>` : d3.count;
-                                }
-                            } else {
-                                // Fallback para versões antigas do bot que usam "tgs_count"
-                                const count = (typeof data.tgs_count === 'number' ? data.tgs_count : 0);
-                                totalTGs_D1 += count;
-                                if(data.tgs_filename && data.tgs_filename !== "N/A") {
-                                    tgLink1 = `<a href="${data.tgs_filename}" download>${count}</a>`;
-                                } else {
-                                    tgLink1 = count;
-                                }
-                                tgLink2 = "-";
-                                tgLink3 = "-";
-                            }
-
-                            // Link do Painel
-                            if(data.panel_url && data.panel_url !== "N/A") {
-                                panelLink = `<a href="${data.panel_url}" target="_blank">Abrir</a>`;
-                            } else {
-                                panelLink = `<a href="COMUNICAÇÕES_${data.garagem}.html" target="_blank">Abrir (Local)</a>`;
-                            }
-                            
-                            rowHtml = `
-                                <tr>
-                                    <td><span class="status ${statusClass}">${statusText}</span></td>
-                                    <td style="text-align: left; font-weight: 600;">${data.garagem}</td>
-                                    <td>${data.online}</td>
-                                    <td>${data.offline}</td>
-                                    <td class="tg-cell">${tgLink1}</td>
-                                    <td class="tg-cell">${tgLink2}</td>
-                                    <td class="tg-cell">${tgLink3}</td>
-                                    <td>${lastUpdate.toLocaleString('pt-BR')}</td>
-                                    <td>${panelLink}</td>
-                                </tr>
-                            `;
                         } else {
-                            // Erro de Fetch
-                            rowHtml = `
-                                <tr>
-                                    <td><span class="status ${statusClass}">${statusText}</span></td>
-                                    <td style="text-align: left;">${result.garagem}</td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td>Falha Conexão</td>
-                                    <td>-</td>
-                                </tr>
-                            `;
+                            // Data não encontrada no histórico (pode ser muito antiga ou futura)
+                            tgContent = "0"; 
                         }
-                        tbody.innerHTML += rowHtml;
-                    });
+                    }
 
-                    // Adiciona linha de Total
-                    tbody.innerHTML += `
-                        <tr class="total-row">
-                            <td colspan="2" style="text-align: right; padding-right: 20px;">TOTAIS:</td>
-                            <td>${totalOnline}</td>
-                            <td>${totalOffline}</td>
-                            <td>${totalTGs_D1}</td>
-                            <td>${totalTGs_D2}</td>
-                            <td>${totalTGs_D3}</td>
-                            <td colspan="2"></td> 
-                        </tr>
-                    `;
-                });
-        });
+                    // Link do Painel
+                    const linkPainel = d.panel_url && d.panel_url !== "N/A" 
+                        ? `<a href="${d.panel_url}" target="_blank">Abrir</a>` 
+                        : `<a href="COMUNICAÇÕES_${d.garagem}.html" target="_blank">Local</a>`;
+
+                    totalOnline += (d.online || 0);
+                    totalOffline += (d.offline || 0);
+
+                    html = `
+                        <tr>
+                            <td><span class="status ${stClass}">${stText}</span></td>
+                            <td><strong>${d.garagem}</strong></td>
+                            <td>${d.online}</td>
+                            <td>${d.offline}</td>
+                            <td class="tg-column-cell">${tgContent}</td>
+                            <td>${lastUp.toLocaleString()}</td>
+                            <td>${linkPainel}</td>
+                        </tr>`;
+                }
+                tbody.innerHTML += html;
+            });
+
+            // Linha de Totais
+            tbody.innerHTML += `
+                <tr class="total-row">
+                    <td colspan="2" style="text-align:right">TOTAIS:</td>
+                    <td>${totalOnline}</td>
+                    <td>${totalOffline}</td>
+                    <td class="tg-column-cell">${totalTGs}</td>
+                    <td colspan="2"></td>
+                </tr>`;
+        }
     </script>
+
 </body>
 </html>
