@@ -1,6 +1,6 @@
 {
-    "id": 1766750415,
-    "data_envio": "2025-12-26 09:00:15",
-    "acao": "git_pull_restart",
-    "parametros": null
+    "id": 1766771320,
+    "data_envio": "2025-12-26 14:48:40",
+    "acao": "reprocessar_todos",
+    "parametros": "20251224"
 }
