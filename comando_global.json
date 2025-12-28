@@ -1,7 +1,6 @@
 {
-    "id": 1766925363,
-    "data_envio": "2025-12-28 09:36:03",
-    "acao": "reprocessar_todos",
-    "parametros": "20251220",
-    "alvo": "MULTI_SELECT"
+    "id": 1766925868,
+    "data_envio": "2025-12-28 09:44:28",
+    "acao": "git_pull_restart",
+    "parametros": null
 }
