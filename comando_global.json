@@ -1,10 +1,9 @@
 {
-    "id": 1767096396,
-    "data_envio": "2025-12-30 09:06:36",
-    "acao": "reprocessar_todos",
-    "parametros": "20251229",
+    "id": 1767113884,
+    "data_envio": "2025-12-30 13:58:04",
+    "acao": "git_pull_restart",
+    "parametros": null,
     "alvos": [
-        "tcm-raposa",
-        "tcm-ribamar"
+        "estrela"
     ]
 }
