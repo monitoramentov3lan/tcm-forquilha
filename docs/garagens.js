@@ -7,13 +7,12 @@
 const GARAGENS = [
 "ESTRELA",
 "INOVARE",
-"MARINA_SPEED",
+"SPEED",
 "MATOS",
-"METROPOLITANA",
 "PATROL",
 "PLANETA",
 "PREMIUM",
-"PRIMOR-TCM",
+"PRIMOR",
 "RATRANS",
 "RIO NEGRO",
 "TAGUATUR",
@@ -23,7 +22,7 @@ const GARAGENS = [
 "TPG",
 "TSC",
 "UNIAO",
-"VIA SL",
+"VIA-SL",
 "VIPER",
 "ZURIQUE",
 "TCM_FORQUILHA",
@@ -32,5 +31,6 @@ const GARAGENS = [
     // ... adicione todas as 26 aqui
 
 ];
+
 
 
