@@ -5,31 +5,32 @@
 // O nome deve ser igual ao NOME_GARAGEM do config.ini de cada bot.
 
 const GARAGENS = [
-    "ESTRELA",
-    "RATRANS",
-    "TPG",
-    "TDI",
-    "VIA-SL",
-    "TCC",
-    "PATROL",
-    "VIPER",
-    "TSC",
-    "RIO NEGRO",
-    "SPEED",
-    "MATOS",
-    "PLANETA",
-    "PRIMOR",
-    "TCV",
-    "INOVARE",
-    "UNIAO",
-    "REQUINTE",
-    "TAGUATUR",
-    "TCM_FORQUILHA",
-    "TCM-RIBAMAR",
-    "TCM-RAPOSA",
-    "ZURIQUE",
-    "PREMIUM"    
+"ESTRELA",
+"INOVARE",
+"MARINA_SPEED",
+"MATOS",
+"METROPOLITANA",
+"PATROL",
+"PLANETA",
+"PREMIUM",
+"PRIMOR-TCM",
+"RATRANS",
+"RIO NEGRO",
+"TAGUATUR",
+"TCC",
+"TCV",
+"TDI",
+"TPG",
+"TSC",
+"UNIAO",
+"VIA SL",
+"VIPER",
+"ZURIQUE",
+"TCM_FORQUILHA",
+"TCM-RIBAMAR",
+"TCM-RAPOSA"   
     // ... adicione todas as 26 aqui
 
 ];
+
 
