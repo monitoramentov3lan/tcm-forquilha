@@ -1,9 +1,10 @@
 {
-    "id": 1767487283,
-    "data_envio": "2026-01-03 21:41:23",
+    "id": 1767612419,
+    "data_envio": "2026-01-05 08:26:59",
     "acao": "reprocessar_todos",
-    "parametros": "20260102",
+    "parametros": "20251230",
     "alvos": [
-        "viper"
+        "tcc",
+        "tcv"
     ]
 }
