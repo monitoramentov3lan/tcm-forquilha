@@ -1,8 +1,8 @@
 {
-    "id": 1767871364,
-    "data_envio": "2026-01-08 08:22:44",
+    "id": 1767969932,
+    "data_envio": "2026-01-09 11:45:32",
     "acao": "reprocessar_todos",
-    "parametros": "20260107",
+    "parametros": "20260108",
     "alvos": [
         "tcm-raposa",
         "tcm-ribamar"
