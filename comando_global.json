@@ -1,10 +1,9 @@
 {
-    "id": 1768215737,
-    "data_envio": "2026-01-12 08:02:17",
-    "acao": "reprocessar_todos",
-    "parametros": "20260108",
+    "id": 1768219503,
+    "data_envio": "2026-01-12 09:05:03",
+    "acao": "reiniciar_biometria",
+    "parametros": null,
     "alvos": [
-        "tcm-raposa",
-        "tcm-ribamar"
+        "TODOS"
     ]
 }
