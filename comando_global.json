@@ -1,0 +1,10 @@
+{
+    "id": 1768560187,
+    "data_envio": "2026-01-16 07:43:07",
+    "acao": "reprocessar_todos",
+    "parametros": "20260115",
+    "alvos": [
+        "matos",
+        "ratrans"
+    ]
+}
