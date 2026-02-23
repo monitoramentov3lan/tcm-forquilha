@@ -30,7 +30,7 @@
         table { width: 100%; max-width: 1200px; margin: 0 auto; border-collapse: collapse; background-color: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         th, td { padding: 12px 15px; text-align: center; border-bottom: 1px solid #ddd; }
         th { background-color: #34495e; color: white; position: sticky; top: 0; z-index: 10; }
-        th:nth-child(2), td:nth-child(2) { text-align: left; } /* Alinha nome da garagem */
+        th:nth-child(2), td:nth-child(2) { text-align: left; } 
         
         /* Coluna Dinâmica de TGs (Destaque) */
         th.tg-column { background-color: #2c3e50; border-left: 2px solid #ecf0f1; border-right: 2px solid #ecf0f1; }
@@ -83,15 +83,28 @@
     <script src="garagens.js"></script> 
 
     <script>
-        let GLOBAL_DATA = []; // Armazena os JSONs baixados
+        let GLOBAL_DATA = []; 
 
         document.addEventListener('DOMContentLoaded', () => {
-            // 1. Define a data padrão para "Ontem"
+            const dateInput = document.getElementById('date-selector');
+            
+            // --- LÓGICA DE LIMITAÇÃO DE 30 DIAS NO CALENDÁRIO ---
+            const today = new Date();
+            const minDate = new Date();
+            minDate.setDate(today.getDate() - 30); // Limite de 30 dias atrás
+
+            // Formata para YYYY-MM-DD (formato exigido pelo input date)
+            const formatDateISO = (d) => d.toISOString().split('T')[0];
+
+            dateInput.max = formatDateISO(today); // Não permite selecionar futuro
+            dateInput.min = formatDateISO(minDate); // Não permite selecionar mais de 30 dias atrás
+
+            // Define "Ontem" como valor padrão
             const yesterday = new Date();
             yesterday.setDate(yesterday.getDate() - 1);
-            document.getElementById('date-selector').valueAsDate = yesterday;
+            dateInput.value = formatDateISO(yesterday);
 
-            // 2. Inicia o download dos dados
+            // Inicia o download dos dados
             fetchAllData();
         });
 
@@ -102,7 +115,6 @@
             }
 
             const promises = GARAGENS.map(garagem => {
-                // Adiciona timestamp para evitar cache do navegador
                 return fetch(`${garagem}_status.json?t=${Date.now()}`)
                     .then(res => res.ok ? res.json() : null)
                     .then(data => ({ name: garagem, data: data, status: data ? 'ok' : 'error' }))
@@ -112,11 +124,10 @@
             Promise.all(promises).then(results => {
                 GLOBAL_DATA = results;
                 document.getElementById('last-updated-text').textContent = `Dados atualizados às ${new Date().toLocaleTimeString()}`;
-                renderTable(); // Desenha a tabela após baixar tudo
+                renderTable(); 
             });
         }
 
-        // Função auxiliar: Converte YYYY-MM-DD (Input) para DD/MM/YYYY (JSON)
         function formatInputToJSONDate(isoDate) {
             if (!isoDate) return null;
             const [year, month, day] = isoDate.split('-');
@@ -126,20 +137,17 @@
         function renderTable() {
             const tbody = document.getElementById('table-body');
             const selectedDateISO = document.getElementById('date-selector').value;
-            const targetDateBR = formatInputToJSONDate(selectedDateISO); // Ex: "09/12/2025"
+            const targetDateBR = formatInputToJSONDate(selectedDateISO); 
             
-            // Atualiza o título da coluna
             document.getElementById('tg-header-date').textContent = targetDateBR ? `(${targetDateBR})` : "(Data Inválida)";
 
             tbody.innerHTML = '';
-            
             let totalOnline = 0, totalOffline = 0, totalTGs = 0;
 
             GLOBAL_DATA.forEach(item => {
                 let html = '';
                 
                 if (item.status === 'error' || !item.data) {
-                    // Linha de Erro
                     html = `
                         <tr>
                             <td><span class="status offline">OFF</span></td>
@@ -151,12 +159,10 @@
                         </tr>`;
                 } else {
                     const d = item.data;
-                    
-                    // Lógica de Status (Verde/Amarelo/Vermelho)
                     const lastUp = new Date(d.last_update);
                     const now = new Date();
                     const cutoff = new Date();
-                    cutoff.setHours(7, 30, 0, 0); // Considera desatualizado se for antes das 07:30 de hoje
+                    cutoff.setHours(7, 30, 0, 0); 
                     
                     let stClass = 'online';
                     let stText = 'Online';
@@ -164,9 +170,7 @@
                     if (d.offline === "ERRO") { stClass = 'offline'; stText = 'Erro Bot'; }
                     else if (now > cutoff && lastUp < cutoff) { stClass = 'stale'; stText = 'Antigo'; }
 
-                    // --- A MÁGICA DO HISTÓRICO ---
-                    // Procura dentro do array de 30 dias a data específica
-                    let tgContent = '<span style="color:#ccc; font-weight:normal">N/A</span>';
+                    let tgContent = '<span style="color:#ccc; font-weight:normal">0</span>';
                     
                     if (d.tgs_history && Array.isArray(d.tgs_history)) {
                         const historyFound = d.tgs_history.find(h => h.data === targetDateBR);
@@ -174,25 +178,19 @@
                         if (historyFound) {
                             totalTGs += historyFound.count;
                             if (historyFound.filename && historyFound.filename !== "N/A") {
-                                // Se tiver arquivo, cria link
                                 tgContent = `<a href="${historyFound.filename}" download>${historyFound.count}</a>`;
                             } else {
-                                // Se só tiver contagem
                                 tgContent = historyFound.count;
                             }
-                        } else {
-                            // Data não encontrada no histórico (pode ser muito antiga ou futura)
-                            tgContent = "0"; 
                         }
                     }
 
-                    // Link do Painel
                     const linkPainel = d.panel_url && d.panel_url !== "N/A" 
                         ? `<a href="${d.panel_url}" target="_blank">Abrir</a>` 
                         : `<a href="COMUNICAÇÕES_${d.garagem}.html" target="_blank">Local</a>`;
 
-                    totalOnline += (d.online || 0);
-                    totalOffline += (d.offline || 0);
+                    totalOnline += (Number(d.online) || 0);
+                    totalOffline += (Number(d.offline) || 0);
 
                     html = `
                         <tr>
@@ -208,7 +206,6 @@
                 tbody.innerHTML += html;
             });
 
-            // Linha de Totais
             tbody.innerHTML += `
                 <tr class="total-row">
                     <td colspan="2" style="text-align:right">TOTAIS:</td>
@@ -222,5 +219,3 @@
 
 </body>
 </html>
-
-
