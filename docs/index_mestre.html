@@ -1,221 +1,886 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="300"> 
-    <title>Monitoramento - Garagens</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f5f7fa; color: #333; }
-        
-        /* Cabeçalho e Controle de Data */
-        .header-container { text-align: center; margin-bottom: 20px; }
-        h1 { margin: 0 0 10px 0; color: #2c3e50; }
-        .last-updated { color: #7f8c8d; font-style: italic; font-size: 0.9em; margin-bottom: 15px; }
-        
-        .date-control { 
-            background: white; padding: 15px; border-radius: 8px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: inline-block;
-        }
-        .date-control label { font-weight: bold; margin-right: 8px; color: #2c3e50; }
-        .date-control input { padding: 8px; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 1em; }
-        .date-control button { 
-            padding: 8px 15px; background-color: #3498db; color: white; 
-            border: none; border-radius: 4px; cursor: pointer; font-size: 1em; margin-left: 10px; 
-            transition: background 0.2s;
-        }
-        .date-control button:hover { background-color: #2980b9; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="refresh" content="300">
+  <title>Monitoramento - Garagens</title>
 
-        /* Tabela */
-        table { width: 100%; max-width: 1200px; margin: 0 auto; border-collapse: collapse; background-color: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        th, td { padding: 12px 15px; text-align: center; border-bottom: 1px solid #ddd; }
-        th { background-color: #34495e; color: white; position: sticky; top: 0; z-index: 10; }
-        th:nth-child(2), td:nth-child(2) { text-align: left; } 
-        
-        /* Coluna Dinâmica de TGs (Destaque) */
-        th.tg-column { background-color: #2c3e50; border-left: 2px solid #ecf0f1; border-right: 2px solid #ecf0f1; }
-        td.tg-column-cell { background-color: #fdfefe; border-left: 2px solid #eee; border-right: 2px solid #eee; font-weight: bold; color: #2980b9; font-family: monospace; font-size: 1.1em; }
+  <style>
+    /* =========================
+       THEME (Dark default)
+    ========================== */
+    :root{
+      --bg: #0b1020;
+      --bg2:#0f1730;
+      --card: rgba(255,255,255,.06);
+      --card2: rgba(255,255,255,.08);
+      --text: #e7eef7;
+      --muted: rgba(231,238,247,.70);
+      --border: rgba(255,255,255,.10);
+      --shadow: 0 12px 40px rgba(0,0,0,.35);
+      --accent: #4da3ff;
+      --accent2:#7c5cff;
 
-        tr:nth-child(even) { background-color: #f9f9f9; }
-        tr:hover { background-color: #f1f1f1; }
-        
-        /* Status Badges */
-        .status { padding: 5px 10px; border-radius: 15px; color: white; font-weight: bold; font-size: 0.85em; display: inline-block; min-width: 80px; }
-        .online { background-color: #27ae60; }
-        .offline { background-color: #e74c3c; }
-        .stale { background-color: #f39c12; }
-        
-        a { color: #3498db; text-decoration: none; font-weight: 600; }
-        a:hover { text-decoration: underline; }
-        .total-row { background-color: #34495e; color: white; font-weight: bold; }
-    </style>
+      --good: #22c55e;
+      --bad:  #ef4444;
+      --warn: #f59e0b;
+
+      --radius: 16px;
+      --radius-sm: 12px;
+    }
+
+    /* Optional: if user explicitly prefers light (still dark default) */
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg: #0b1020; /* keep dark default */
+      }
+    }
+
+    *{ box-sizing:border-box; }
+    html, body{ height:100%; }
+    body{
+      margin:0;
+      padding:24px;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color: var(--text);
+      background:
+        radial-gradient(900px 600px at 20% -10%, rgba(77,163,255,.22), transparent 60%),
+        radial-gradient(900px 600px at 95% 0%, rgba(124,92,255,.18), transparent 55%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
+    }
+
+    a{ color: var(--accent); text-decoration: none; font-weight: 650; }
+    a:hover{ text-decoration: underline; }
+
+    .container{
+      max-width: 1250px;
+      margin: 0 auto;
+    }
+
+    /* =========================
+       Top bar
+    ========================== */
+    .topbar{
+      display:flex;
+      flex-wrap:wrap;
+      gap:14px;
+      align-items:flex-end;
+      justify-content:space-between;
+      margin-bottom: 16px;
+    }
+
+    .title{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width: 260px;
+    }
+    .title h1{
+      margin:0;
+      font-size: 22px;
+      letter-spacing: .2px;
+    }
+    .subtitle{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .dot{
+      width:8px; height:8px; border-radius:999px;
+      background: var(--accent);
+      box-shadow: 0 0 0 6px rgba(77,163,255,.12);
+      display:inline-block;
+    }
+
+    .controls{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+      justify-content:flex-end;
+    }
+
+    .pill{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 10px 12px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .pill label{
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 700;
+      letter-spacing: .2px;
+      white-space: nowrap;
+    }
+
+    input[type="date"], input[type="text"], select{
+      background: rgba(0,0,0,.25);
+      border: 1px solid rgba(255,255,255,.12);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 9px 10px;
+      outline: none;
+      font-size: 14px;
+    }
+    input[type="text"]{ width: 230px; }
+
+    .btn{
+      border: 1px solid rgba(255,255,255,.12);
+      background: linear-gradient(135deg, rgba(77,163,255,.9), rgba(124,92,255,.85));
+      color: #071022;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-weight: 800;
+      cursor:pointer;
+      transition: transform .12s ease, filter .12s ease;
+      box-shadow: 0 10px 26px rgba(77,163,255,.22);
+    }
+    .btn:hover{ transform: translateY(-1px); filter: brightness(1.04); }
+    .btn:active{ transform: translateY(0px); }
+
+    /* =========================
+       KPI cards
+    ========================== */
+    .kpis{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 12px;
+      margin: 14px 0 16px;
+    }
+    @media (max-width: 980px){
+      .kpis{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+    @media (max-width: 520px){
+      .kpis{ grid-template-columns: 1fr; }
+    }
+
+    .card{
+      border: 1px solid var(--border);
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      padding: 14px 14px;
+      position: relative;
+      overflow:hidden;
+    }
+    .card::before{
+      content:"";
+      position:absolute; inset:-2px;
+      background:
+        radial-gradient(500px 240px at 10% 0%, rgba(77,163,255,.18), transparent 60%),
+        radial-gradient(500px 240px at 90% 0%, rgba(124,92,255,.14), transparent 60%);
+      pointer-events:none;
+      opacity:.9;
+    }
+    .card > *{ position: relative; z-index: 1; }
+
+    .kpi-label{
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .24px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-bottom: 8px;
+    }
+    .kpi-value{
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: .2px;
+      margin-bottom: 2px;
+    }
+    .kpi-sub{
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .badge{
+      font-size: 11px;
+      font-weight: 900;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.25);
+      color: var(--text);
+      white-space: nowrap;
+    }
+    .badge.good{ border-color: rgba(34,197,94,.30); background: rgba(34,197,94,.12); }
+    .badge.bad{ border-color: rgba(239,68,68,.30); background: rgba(239,68,68,.12); }
+    .badge.warn{ border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.12); }
+
+    /* =========================
+       Filters row
+    ========================== */
+    .filterbar{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom: 10px;
+    }
+    .filter-left, .filter-right{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+    }
+
+    .toggle{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,.20);
+      cursor:pointer;
+      user-select:none;
+      font-weight: 800;
+      font-size: 12px;
+      color: var(--muted);
+      transition: transform .12s ease, background .12s ease;
+    }
+    .toggle:hover{ transform: translateY(-1px); background: rgba(0,0,0,.26); }
+    .toggle.active{
+      color: var(--text);
+      border-color: rgba(77,163,255,.35);
+      background: rgba(77,163,255,.10);
+    }
+
+    /* =========================
+       Table container
+    ========================== */
+    .table-card{
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,.18);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    table{
+      width: 100%;
+      border-collapse: collapse;
+    }
+    thead th{
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: rgba(10,16,34,.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,.12);
+      padding: 12px 14px;
+      text-align:center;
+      font-size: 12px;
+      color: rgba(231,238,247,.9);
+      letter-spacing: .25px;
+      text-transform: uppercase;
+      font-weight: 900;
+    }
+    tbody td{
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+      text-align:center;
+      font-size: 14px;
+    }
+    th:nth-child(2), td:nth-child(2){ text-align:left; }
+    tr:hover td{
+      background: rgba(255,255,255,.03);
+    }
+
+    .row-link{
+      cursor:pointer;
+    }
+
+    /* Status */
+    .status-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.25);
+      font-weight: 900;
+      font-size: 12px;
+      min-width: 96px;
+      justify-content:center;
+    }
+    .status-pill .s-dot{
+      width:8px; height:8px; border-radius:999px;
+      background: var(--muted);
+      box-shadow: 0 0 0 6px rgba(255,255,255,.06);
+    }
+    .status-pill.online{ border-color: rgba(34,197,94,.30); }
+    .status-pill.online .s-dot{ background: var(--good); box-shadow: 0 0 0 6px rgba(34,197,94,.12); }
+    .status-pill.offline{ border-color: rgba(239,68,68,.30); }
+    .status-pill.offline .s-dot{ background: var(--bad); box-shadow: 0 0 0 6px rgba(239,68,68,.12); }
+    .status-pill.stale{ border-color: rgba(245,158,11,.35); }
+    .status-pill.stale .s-dot{ background: var(--warn); box-shadow: 0 0 0 6px rgba(245,158,11,.12); }
+
+    /* TG cell */
+    .tg-cell{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-weight: 900;
+      color: var(--accent);
+    }
+    .tg-zero{
+      color: rgba(231,238,247,.35);
+      font-weight: 700;
+    }
+
+    /* Sparkline */
+    .spark{
+      width: 120px; height: 26px;
+      display:inline-block;
+      vertical-align: middle;
+      opacity: .95;
+    }
+    .spark .line{
+      fill:none;
+      stroke: rgba(77,163,255,.9);
+      stroke-width: 2;
+    }
+    .spark .fill{
+      fill: rgba(77,163,255,.10);
+    }
+    .spark .dot{
+      fill: rgba(124,92,255,.9);
+    }
+
+    /* Footer totals row */
+    .total-row td{
+      background: rgba(255,255,255,.04);
+      font-weight: 900;
+      border-bottom: none;
+    }
+
+    /* Skeleton */
+    .skeleton{
+      position: relative;
+      overflow:hidden;
+      background: rgba(255,255,255,.04);
+      border-radius: 10px;
+      height: 16px;
+    }
+    .skeleton::after{
+      content:"";
+      position:absolute; inset:0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent);
+      transform: translateX(-100%);
+      animation: shimmer 1.1s infinite;
+    }
+    @keyframes shimmer{
+      100%{ transform: translateX(100%); }
+    }
+
+    .hint{
+      color: var(--muted);
+      font-size: 12px;
+    }
+  </style>
 </head>
+
 <body>
+  <div class="container">
 
-    <div class="header-container">
-        <h1>Monitoramento - Garagens</h1>
-        <div class="last-updated" id="last-updated-text">Carregando sistema...</div>
-
-        <div class="date-control">
-            <label for="date-selector">📅 Visualizar TGs do dia:</label>
-            <input type="date" id="date-selector">
-            <button onclick="renderTable()">Atualizar</button>
+    <div class="topbar">
+      <div class="title">
+        <h1>Monitoramento — Garagens</h1>
+        <div class="subtitle">
+          <span class="dot"></span>
+          <span id="last-updated-text">Carregando sistema…</span>
+          <span class="badge" id="status-summary">—</span>
         </div>
+      </div>
+
+      <div class="controls">
+        <div class="pill">
+          <label for="date-selector">📅 TGs do dia</label>
+          <input type="date" id="date-selector" />
+        </div>
+
+        <button class="btn" id="btn-refresh" type="button">Atualizar</button>
+      </div>
     </div>
 
-    <table>
+    <div class="kpis">
+      <div class="card">
+        <div class="kpi-label">✅ Online <span class="badge good">Saudável</span></div>
+        <div class="kpi-value" id="kpi-online">—</div>
+        <div class="kpi-sub">Somatório de online</div>
+      </div>
+
+      <div class="card">
+        <div class="kpi-label">⛔ Offline <span class="badge bad">Atenção</span></div>
+        <div class="kpi-value" id="kpi-offline">—</div>
+        <div class="kpi-sub">Somatório de offline</div>
+      </div>
+
+      <div class="card">
+        <div class="kpi-label">📋 TGs (dia selecionado) <span class="badge" id="kpi-date-badge">—</span></div>
+        <div class="kpi-value" id="kpi-tgs">—</div>
+        <div class="kpi-sub">Total de arquivos TG no dia</div>
+      </div>
+
+      <div class="card">
+        <div class="kpi-label">🕒 Atualização</div>
+        <div class="kpi-value" id="kpi-fresh">—</div>
+        <div class="kpi-sub" id="kpi-fresh-sub">Última leitura</div>
+      </div>
+    </div>
+
+    <div class="filterbar">
+      <div class="filter-left">
+        <div class="pill">
+          <label for="search">🔎 Buscar</label>
+          <input type="text" id="search" placeholder="Ex: TCC, FORQUILHA…" />
+        </div>
+
+        <div class="toggle" id="f-offline">Somente offline</div>
+        <div class="toggle" id="f-stale">Somente antigo</div>
+        <div class="toggle" id="f-tgs">Somente com TGs</div>
+
+        <div class="hint">Dica: clique na linha para abrir o painel.</div>
+      </div>
+
+      <div class="filter-right">
+        <div class="pill">
+          <label for="sort">Ordenar</label>
+          <select id="sort">
+            <option value="name_asc">Garagem (A→Z)</option>
+            <option value="offline_desc">Offline (maior→menor)</option>
+            <option value="online_desc">Online (maior→menor)</option>
+            <option value="tgs_desc">TGs (maior→menor)</option>
+            <option value="last_oldest">Última atualização (mais antigo)</option>
+            <option value="last_newest">Última atualização (mais recente)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <table>
         <thead>
-            <tr>
-                <th width="10%">Status</th>
-                <th width="25%">Garagem</th>
-                <th width="10%">Online</th>
-                <th width="10%">Offline</th>
-                <th class="tg-column" width="20%">TGs <br><small id="tg-header-date">(Selecione)</small></th>
-                <th width="15%">Última Atualização</th>
-                <th width="10%">Painel</th>
-            </tr>
+          <tr>
+            <th width="12%">Status</th>
+            <th width="22%">Garagem</th>
+            <th width="10%">Online</th>
+            <th width="10%">Offline</th>
+            <th width="14%">TGs <br><small id="tg-header-date" style="color:var(--muted); text-transform:none; font-weight:800">(Selecione)</small></th>
+            <th width="18%">Última atualização</th>
+            <th width="8%">Painel</th>
+            <th width="16%">Trend 30 dias</th>
+          </tr>
         </thead>
+
         <tbody id="table-body">
-            <tr><td colspan="7">Carregando dados....</td></tr>
+          <!-- skeleton -->
         </tbody>
-    </table>
+      </table>
+    </div>
 
-    <script src="garagens.js"></script> 
+  </div>
 
-    <script>
-        let GLOBAL_DATA = []; 
+  <script src="garagens.js"></script>
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const dateInput = document.getElementById('date-selector');
-            
-            // --- LÓGICA DE LIMITAÇÃO DE 30 DIAS NO CALENDÁRIO ---
-            const today = new Date();
-            const minDate = new Date();
-            minDate.setDate(today.getDate() - 30); // Limite de 30 dias atrás
+  <script>
+    let GLOBAL_DATA = [];
+    let LAST_FETCH_AT = null;
 
-            // Formata para YYYY-MM-DD (formato exigido pelo input date)
-            const formatDateISO = (d) => d.toISOString().split('T')[0];
+    const els = {
+      tbody: document.getElementById('table-body'),
+      lastUpdated: document.getElementById('last-updated-text'),
+      statusSummary: document.getElementById('status-summary'),
 
-            dateInput.max = formatDateISO(today); // Não permite selecionar futuro
-            dateInput.min = formatDateISO(minDate); // Não permite selecionar mais de 30 dias atrás
+      date: document.getElementById('date-selector'),
+      btnRefresh: document.getElementById('btn-refresh'),
+      tgHeaderDate: document.getElementById('tg-header-date'),
 
-            // Define "Ontem" como valor padrão
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            dateInput.value = formatDateISO(yesterday);
+      search: document.getElementById('search'),
+      sort: document.getElementById('sort'),
 
-            // Inicia o download dos dados
-            fetchAllData();
+      fOffline: document.getElementById('f-offline'),
+      fStale: document.getElementById('f-stale'),
+      fTgs: document.getElementById('f-tgs'),
+
+      kOnline: document.getElementById('kpi-online'),
+      kOffline: document.getElementById('kpi-offline'),
+      kTgs: document.getElementById('kpi-tgs'),
+      kDate: document.getElementById('kpi-date-badge'),
+      kFresh: document.getElementById('kpi-fresh'),
+      kFreshSub: document.getElementById('kpi-fresh-sub'),
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      setupDateLimit();
+      renderSkeleton();
+      fetchAllData();
+
+      els.btnRefresh.addEventListener('click', fetchAllData);
+      els.date.addEventListener('change', renderTable);
+
+      els.search.addEventListener('input', renderTable);
+      els.sort.addEventListener('change', renderTable);
+
+      [els.fOffline, els.fStale, els.fTgs].forEach(t => {
+        t.addEventListener('click', () => {
+          t.classList.toggle('active');
+          renderTable();
         });
+      });
+    });
 
-        function fetchAllData() {
-            if (typeof GARAGENS === 'undefined') {
-                document.getElementById('table-body').innerHTML = '<tr><td colspan="7" style="color:red">Erro: arquivo garagens.js não carregado.</td></tr>';
-                return;
-            }
+    function setupDateLimit(){
+      const today = new Date();
+      const minDate = new Date();
+      minDate.setDate(today.getDate() - 30);
 
-            const promises = GARAGENS.map(garagem => {
-                return fetch(`${garagem}_status.json?t=${Date.now()}`)
-                    .then(res => res.ok ? res.json() : null)
-                    .then(data => ({ name: garagem, data: data, status: data ? 'ok' : 'error' }))
-                    .catch(err => ({ name: garagem, data: null, status: 'error' }));
-            });
+      const toISO = (d) => d.toISOString().split('T')[0];
+      els.date.max = toISO(today);
+      els.date.min = toISO(minDate);
 
-            Promise.all(promises).then(results => {
-                GLOBAL_DATA = results;
-                document.getElementById('last-updated-text').textContent = `Dados atualizados às ${new Date().toLocaleTimeString()}`;
-                renderTable(); 
-            });
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      els.date.value = toISO(yesterday);
+
+      els.kDate.textContent = els.date.value ? els.date.value.split('-').reverse().join('/') : '—';
+    }
+
+    function renderSkeleton(){
+      let html = '';
+      for (let i=0; i<8; i++){
+        html += `
+          <tr>
+            <td><div class="skeleton"></div></td>
+            <td><div class="skeleton" style="width:70%"></div></td>
+            <td><div class="skeleton" style="width:45%"></div></td>
+            <td><div class="skeleton" style="width:45%"></div></td>
+            <td><div class="skeleton" style="width:45%"></div></td>
+            <td><div class="skeleton" style="width:80%"></div></td>
+            <td><div class="skeleton" style="width:50%"></div></td>
+            <td><div class="skeleton" style="width:80%"></div></td>
+          </tr>
+        `;
+      }
+      els.tbody.innerHTML = html;
+    }
+
+    function formatInputToBR(isoDate){
+      if (!isoDate) return null;
+      const [y,m,d] = isoDate.split('-');
+      return `${d}/${m}/${y}`;
+    }
+
+    function timeAgo(dateObj){
+      if (!(dateObj instanceof Date) || isNaN(dateObj)) return '—';
+      const diff = Date.now() - dateObj.getTime();
+      const sec = Math.floor(diff/1000);
+      if (sec < 60) return `há ${sec}s`;
+      const min = Math.floor(sec/60);
+      if (min < 60) return `há ${min} min`;
+      const h = Math.floor(min/60);
+      if (h < 48) return `há ${h} h`;
+      const d = Math.floor(h/24);
+      return `há ${d} dias`;
+    }
+
+    function safeNum(x){
+      const n = Number(x);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function getCutoffDate(){
+      const cutoff = new Date();
+      cutoff.setHours(7, 30, 0, 0);
+      return cutoff;
+    }
+
+    async function fetchAllData(){
+      if (typeof GARAGENS === 'undefined') {
+        els.tbody.innerHTML = '<tr><td colspan="8" style="color:#ff8a8a;padding:18px;text-align:center">Erro: arquivo garagens.js não carregado.</td></tr>';
+        return;
+      }
+
+      renderSkeleton();
+      const start = Date.now();
+
+      const tasks = GARAGENS.map(async (garagem) => {
+        try{
+          const res = await fetch(`${garagem}_status.json?t=${Date.now()}`);
+          if (!res.ok) return { name: garagem, data: null, status: 'error' };
+          const data = await res.json();
+          return { name: garagem, data, status: 'ok' };
+        }catch(e){
+          return { name: garagem, data: null, status: 'error' };
+        }
+      });
+
+      const results = await Promise.allSettled(tasks);
+      GLOBAL_DATA = results.map(r => (r.status === 'fulfilled' ? r.value : {name:'?', data:null, status:'error'}));
+
+      LAST_FETCH_AT = new Date();
+      const elapsed = Math.max(1, Math.round((Date.now()-start)/1000));
+
+      els.lastUpdated.textContent = `Atualizado às ${LAST_FETCH_AT.toLocaleTimeString()} • ${elapsed}s`;
+      els.kFresh.textContent = LAST_FETCH_AT.toLocaleTimeString();
+      els.kFreshSub.textContent = `Atualização (${timeAgo(LAST_FETCH_AT)})`;
+
+      renderTable();
+    }
+
+    function buildSparkline(history){
+      // history expected: [{data:"dd/mm/yyyy", count:n}, ...] newest->oldest
+      if (!Array.isArray(history) || history.length === 0) return '';
+
+      // make oldest->newest for drawing
+      const points = [...history].reverse().map(h => safeNum(h.count));
+      const max = Math.max(1, ...points);
+
+      const W = 120, H = 26, pad = 2;
+      const step = (W - pad*2) / Math.max(1, points.length - 1);
+
+      const xy = points.map((v, i) => {
+        const x = pad + (step * i);
+        const y = (H - pad) - ((v / max) * (H - pad*2));
+        return {x, y};
+      });
+
+      const line = xy.map(p => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ');
+      const fill = `${pad},${H-pad} ` + line + ` ${W-pad},${H-pad}`;
+
+      const last = xy[xy.length-1];
+
+      return `
+        <svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-label="trend 30 dias">
+          <polygon class="fill" points="${fill}"></polygon>
+          <polyline class="line" points="${line}"></polyline>
+          <circle class="dot" cx="${last.x.toFixed(2)}" cy="${last.y.toFixed(2)}" r="2.6"></circle>
+        </svg>
+      `;
+    }
+
+    function getTGCountForDate(d, targetDateBR){
+      if (!d || !Array.isArray(d.tgs_history)) return {count:0, filename:"N/A"};
+      const found = d.tgs_history.find(h => h.data === targetDateBR);
+      if (!found) return {count:0, filename:"N/A"};
+      return {count: safeNum(found.count), filename: found.filename || "N/A"};
+    }
+
+    function normalizeRow(item, targetDateBR){
+      if (!item || item.status !== 'ok' || !item.data){
+        return {
+          ok:false,
+          name: item?.name || '-',
+          garagem: item?.name || '-',
+          online: 0,
+          offline: 0,
+          tg: {count:0, filename:"N/A"},
+          lastUp: null,
+          panelUrl: null,
+          stale: false,
+          erroBot: true,
+          trendSvg: ''
+        };
+      }
+
+      const d = item.data;
+      const lastUp = new Date(d.last_update);
+      const now = new Date();
+      const cutoff = getCutoffDate();
+
+      const erroBot = (d.offline === "ERRO");
+      const stale = (!erroBot && now > cutoff && lastUp < cutoff);
+
+      const tg = getTGCountForDate(d, targetDateBR);
+      const trendSvg = buildSparkline(d.tgs_history || []);
+
+      const panelUrl = (d.panel_url && d.panel_url !== "N/A") ? d.panel_url : `COMUNICAÇÕES_${d.garagem}.html`;
+
+      return {
+        ok:true,
+        name: item.name,
+        garagem: d.garagem || item.name,
+        online: safeNum(d.online),
+        offline: safeNum(d.offline),
+        tg,
+        lastUp,
+        panelUrl,
+        stale,
+        erroBot,
+        trendSvg
+      };
+    }
+
+    function renderTable(){
+      const selectedISO = els.date.value;
+      const targetDateBR = formatInputToBR(selectedISO);
+
+      els.kDate.textContent = targetDateBR || '—';
+      els.tgHeaderDate.textContent = targetDateBR ? `(${targetDateBR})` : "(Data inválida)";
+
+      const q = (els.search.value || '').trim().toLowerCase();
+      const onlyOffline = els.fOffline.classList.contains('active');
+      const onlyStale = els.fStale.classList.contains('active');
+      const onlyTgs = els.fTgs.classList.contains('active');
+
+      // normalize
+      let rows = GLOBAL_DATA.map(item => normalizeRow(item, targetDateBR));
+
+      // filters
+      rows = rows.filter(r => {
+        if (q && !String(r.garagem).toLowerCase().includes(q) && !String(r.name).toLowerCase().includes(q)) return false;
+        if (onlyOffline && !(r.erroBot || r.offline > 0)) return false;
+        if (onlyStale && !r.stale) return false;
+        if (onlyTgs && !(r.tg.count > 0)) return false;
+        return true;
+      });
+
+      // sorting
+      const sort = els.sort.value;
+      const byName = (a,b) => String(a.garagem).localeCompare(String(b.garagem), 'pt-BR');
+      const byNumDesc = (key) => (a,b) => (safeNum(b[key]) - safeNum(a[key])) || byName(a,b);
+      const byDate = (dir) => (a,b) => {
+        const ta = a.lastUp ? a.lastUp.getTime() : 0;
+        const tb = b.lastUp ? b.lastUp.getTime() : 0;
+        return dir === 'asc' ? (ta - tb) : (tb - ta);
+      };
+
+      if (sort === 'name_asc') rows.sort(byName);
+      else if (sort === 'offline_desc') rows.sort(byNumDesc('offline'));
+      else if (sort === 'online_desc') rows.sort(byNumDesc('online'));
+      else if (sort === 'tgs_desc') rows.sort((a,b) => (b.tg.count - a.tg.count) || byName(a,b));
+      else if (sort === 'last_oldest') rows.sort(byDate('asc'));
+      else if (sort === 'last_newest') rows.sort(byDate('desc'));
+
+      // KPIs (totals from displayed rows)
+      let totalOnline = 0, totalOffline = 0, totalTGs = 0, okCount = 0, errCount = 0;
+      rows.forEach(r => {
+        if (r.ok) okCount++; else errCount++;
+        totalOnline += safeNum(r.online);
+        totalOffline += safeNum(r.offline);
+        totalTGs += safeNum(r.tg.count);
+      });
+
+      els.kOnline.textContent = totalOnline.toString();
+      els.kOffline.textContent = totalOffline.toString();
+      els.kTgs.textContent = totalTGs.toString();
+
+      // summary badge
+      els.statusSummary.textContent = `${okCount} OK • ${errCount} falha(s)`;
+
+      // render
+      if (!rows.length){
+        els.tbody.innerHTML = `
+          <tr>
+            <td colspan="8" style="padding:18px;text-align:center;color:var(--muted)">
+              Nenhum resultado com os filtros atuais.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      let html = '';
+      rows.forEach(r => {
+        if (!r.ok){
+          html += `
+            <tr>
+              <td><span class="status-pill offline"><span class="s-dot"></span>OFF</span></td>
+              <td><strong>${escapeHtml(r.garagem)}</strong></td>
+              <td>—</td>
+              <td>—</td>
+              <td class="tg-cell">—</td>
+              <td style="color:var(--muted)">Falha leitura</td>
+              <td>—</td>
+              <td style="color:var(--muted)">—</td>
+            </tr>
+          `;
+          return;
         }
 
-        function formatInputToJSONDate(isoDate) {
-            if (!isoDate) return null;
-            const [year, month, day] = isoDate.split('-');
-            return `${day}/${month}/${year}`;
+        let stClass = 'online';
+        let stText = 'Online';
+        if (r.erroBot){ stClass='offline'; stText='Erro Bot'; }
+        else if (r.stale){ stClass='stale'; stText='Antigo'; }
+        else if (r.offline > 0){ stClass='offline'; stText='Offline'; }
+
+        const lastUpStr = r.lastUp ? r.lastUp.toLocaleString() : '—';
+        const lastUpAgo = r.lastUp ? timeAgo(r.lastUp) : '—';
+
+        let tgContent = `<span class="tg-zero">0</span>`;
+        if (r.tg.count > 0){
+          totalTGs += r.tg.count;
+          if (r.tg.filename && r.tg.filename !== "N/A"){
+            tgContent = `<a href="${encodeURI(r.tg.filename)}" download>${r.tg.count}</a>`;
+          }else{
+            tgContent = String(r.tg.count);
+          }
         }
 
-        function renderTable() {
-            const tbody = document.getElementById('table-body');
-            const selectedDateISO = document.getElementById('date-selector').value;
-            const targetDateBR = formatInputToJSONDate(selectedDateISO); 
-            
-            document.getElementById('tg-header-date').textContent = targetDateBR ? `(${targetDateBR})` : "(Data Inválida)";
+        html += `
+          <tr class="row-link" data-url="${escapeAttr(r.panelUrl)}" title="Abrir painel">
+            <td>
+              <span class="status-pill ${stClass}">
+                <span class="s-dot"></span>${stText}
+              </span>
+            </td>
+            <td><strong>${escapeHtml(r.garagem)}</strong></td>
+            <td>${r.online}</td>
+            <td>${r.offline}</td>
+            <td class="tg-cell">${tgContent}</td>
+            <td title="${escapeAttr(lastUpStr)}">${escapeHtml(lastUpAgo)} <span style="color:var(--muted); font-weight:700">(${escapeHtml(lastUpStr)})</span></td>
+            <td><a href="${escapeAttr(r.panelUrl)}" target="_blank" rel="noopener">Abrir</a></td>
+            <td>${r.trendSvg || '<span style="color:var(--muted)">—</span>'}</td>
+          </tr>
+        `;
+      });
 
-            tbody.innerHTML = '';
-            let totalOnline = 0, totalOffline = 0, totalTGs = 0;
+      // footer totals row
+      html += `
+        <tr class="total-row">
+          <td colspan="2" style="text-align:right">TOTAIS (exibidos):</td>
+          <td>${totalOnline}</td>
+          <td>${totalOffline}</td>
+          <td class="tg-cell">${totalTGs}</td>
+          <td colspan="3"></td>
+        </tr>
+      `;
 
-            GLOBAL_DATA.forEach(item => {
-                let html = '';
-                
-                if (item.status === 'error' || !item.data) {
-                    html = `
-                        <tr>
-                            <td><span class="status offline">OFF</span></td>
-                            <td>${item.name}</td>
-                            <td>-</td><td>-</td>
-                            <td class="tg-column-cell">-</td>
-                            <td>Falha Leitura</td>
-                            <td>-</td>
-                        </tr>`;
-                } else {
-                    const d = item.data;
-                    const lastUp = new Date(d.last_update);
-                    const now = new Date();
-                    const cutoff = new Date();
-                    cutoff.setHours(7, 30, 0, 0); 
-                    
-                    let stClass = 'online';
-                    let stText = 'Online';
-                    
-                    if (d.offline === "ERRO") { stClass = 'offline'; stText = 'Erro Bot'; }
-                    else if (now > cutoff && lastUp < cutoff) { stClass = 'stale'; stText = 'Antigo'; }
+      els.tbody.innerHTML = html;
 
-                    let tgContent = '<span style="color:#ccc; font-weight:normal">0</span>';
-                    
-                    if (d.tgs_history && Array.isArray(d.tgs_history)) {
-                        const historyFound = d.tgs_history.find(h => h.data === targetDateBR);
-                        
-                        if (historyFound) {
-                            totalTGs += historyFound.count;
-                            if (historyFound.filename && historyFound.filename !== "N/A") {
-                                tgContent = `<a href="${historyFound.filename}" download>${historyFound.count}</a>`;
-                            } else {
-                                tgContent = historyFound.count;
-                            }
-                        }
-                    }
+      // row click -> open panel
+      document.querySelectorAll('.row-link').forEach(tr => {
+        tr.addEventListener('click', (ev) => {
+          // allow clicking link without double open
+          if (ev.target && ev.target.tagName === 'A') return;
+          const url = tr.getAttribute('data-url');
+          if (url) window.open(url, '_blank', 'noopener');
+        });
+      });
+    }
 
-                    const linkPainel = d.panel_url && d.panel_url !== "N/A" 
-                        ? `<a href="${d.panel_url}" target="_blank">Abrir</a>` 
-                        : `<a href="COMUNICAÇÕES_${d.garagem}.html" target="_blank">Local</a>`;
-
-                    totalOnline += (Number(d.online) || 0);
-                    totalOffline += (Number(d.offline) || 0);
-
-                    html = `
-                        <tr>
-                            <td><span class="status ${stClass}">${stText}</span></td>
-                            <td><strong>${d.garagem}</strong></td>
-                            <td>${d.online}</td>
-                            <td>${d.offline}</td>
-                            <td class="tg-column-cell">${tgContent}</td>
-                            <td>${lastUp.toLocaleString()}</td>
-                            <td>${linkPainel}</td>
-                        </tr>`;
-                }
-                tbody.innerHTML += html;
-            });
-
-            tbody.innerHTML += `
-                <tr class="total-row">
-                    <td colspan="2" style="text-align:right">TOTAIS:</td>
-                    <td>${totalOnline}</td>
-                    <td>${totalOffline}</td>
-                    <td class="tg-column-cell">${totalTGs}</td>
-                    <td colspan="2"></td>
-                </tr>`;
-        }
-    </script>
-
+    function escapeHtml(s){
+      return String(s ?? '')
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'","&#039;");
+    }
+    function escapeAttr(s){ return escapeHtml(s).replaceAll('`','&#096;'); }
+  </script>
 </body>
 </html>
