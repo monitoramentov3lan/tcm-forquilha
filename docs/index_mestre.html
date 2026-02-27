@@ -7,9 +7,6 @@
   <title>Monitoramento - Garagens</title>
 
   <style>
-    /* =========================
-       THEME (Dark default)
-    ========================== */
     :root{
       --bg: #0b1020;
       --bg2:#0f1730;
@@ -30,10 +27,9 @@
       --radius-sm: 12px;
     }
 
-    /* Optional: if user explicitly prefers light (still dark default) */
     @media (prefers-color-scheme: light){
       :root{
-        --bg: #0b1020; /* keep dark default */
+        --bg: #0b1020;
       }
     }
 
@@ -58,9 +54,6 @@
       margin: 0 auto;
     }
 
-    /* =========================
-       Top bar
-    ========================== */
     .topbar{
       display:flex;
       flex-wrap:wrap;
@@ -148,9 +141,6 @@
     .btn:hover{ transform: translateY(-1px); filter: brightness(1.04); }
     .btn:active{ transform: translateY(0px); }
 
-    /* =========================
-       KPI cards
-    ========================== */
     .kpis{
       display:grid;
       grid-template-columns: repeat(4, minmax(0,1fr));
@@ -219,9 +209,6 @@
     .badge.bad{ border-color: rgba(239,68,68,.30); background: rgba(239,68,68,.12); }
     .badge.warn{ border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.12); }
 
-    /* =========================
-       Filters row
-    ========================== */
     .filterbar{
       display:flex;
       flex-wrap:wrap;
@@ -259,9 +246,6 @@
       background: rgba(77,163,255,.10);
     }
 
-    /* =========================
-       Table container
-    ========================== */
     .table-card{
       border: 1px solid var(--border);
       background: rgba(0,0,0,.18);
@@ -304,7 +288,6 @@
       cursor:pointer;
     }
 
-    /* Status */
     .status-pill{
       display:inline-flex;
       align-items:center;
@@ -330,7 +313,6 @@
     .status-pill.stale{ border-color: rgba(245,158,11,.35); }
     .status-pill.stale .s-dot{ background: var(--warn); box-shadow: 0 0 0 6px rgba(245,158,11,.12); }
 
-    /* TG cell */
     .tg-cell{
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
       font-weight: 900;
@@ -341,7 +323,6 @@
       font-weight: 700;
     }
 
-    /* Sparkline */
     .spark{
       width: 120px; height: 26px;
       display:inline-block;
@@ -360,14 +341,12 @@
       fill: rgba(124,92,255,.9);
     }
 
-    /* Footer totals row */
     .total-row td{
       background: rgba(255,255,255,.04);
       font-weight: 900;
       border-bottom: none;
     }
 
-    /* Skeleton */
     .skeleton{
       position: relative;
       overflow:hidden;
@@ -642,10 +621,8 @@
     }
 
     function buildSparkline(history){
-      // history expected: [{data:"dd/mm/yyyy", count:n}, ...] newest->oldest
       if (!Array.isArray(history) || history.length === 0) return '';
 
-      // make oldest->newest for drawing
       const points = [...history].reverse().map(h => safeNum(h.count));
       const max = Math.max(1, ...points);
 
@@ -736,10 +713,8 @@
       const onlyStale = els.fStale.classList.contains('active');
       const onlyTgs = els.fTgs.classList.contains('active');
 
-      // normalize
       let rows = GLOBAL_DATA.map(item => normalizeRow(item, targetDateBR));
 
-      // filters
       rows = rows.filter(r => {
         if (q && !String(r.garagem).toLowerCase().includes(q) && !String(r.name).toLowerCase().includes(q)) return false;
         if (onlyOffline && !(r.erroBot || r.offline > 0)) return false;
@@ -748,7 +723,6 @@
         return true;
       });
 
-      // sorting
       const sort = els.sort.value;
       const byName = (a,b) => String(a.garagem).localeCompare(String(b.garagem), 'pt-BR');
       const byNumDesc = (key) => (a,b) => (safeNum(b[key]) - safeNum(a[key])) || byName(a,b);
@@ -765,7 +739,6 @@
       else if (sort === 'last_oldest') rows.sort(byDate('asc'));
       else if (sort === 'last_newest') rows.sort(byDate('desc'));
 
-      // KPIs (totals from displayed rows)
       let totalOnline = 0, totalOffline = 0, totalTGs = 0, okCount = 0, errCount = 0;
       rows.forEach(r => {
         if (r.ok) okCount++; else errCount++;
@@ -777,11 +750,8 @@
       els.kOnline.textContent = totalOnline.toString();
       els.kOffline.textContent = totalOffline.toString();
       els.kTgs.textContent = totalTGs.toString();
-
-      // summary badge
       els.statusSummary.textContent = `${okCount} OK • ${errCount} falha(s)`;
 
-      // render
       if (!rows.length){
         els.tbody.innerHTML = `
           <tr>
@@ -822,7 +792,6 @@
 
         let tgContent = `<span class="tg-zero">0</span>`;
         if (r.tg.count > 0){
-          totalTGs += r.tg.count;
           if (r.tg.filename && r.tg.filename !== "N/A"){
             tgContent = `<a href="${encodeURI(r.tg.filename)}" download>${r.tg.count}</a>`;
           }else{
@@ -848,7 +817,6 @@
         `;
       });
 
-      // footer totals row
       html += `
         <tr class="total-row">
           <td colspan="2" style="text-align:right">TOTAIS (exibidos):</td>
@@ -861,10 +829,8 @@
 
       els.tbody.innerHTML = html;
 
-      // row click -> open panel
       document.querySelectorAll('.row-link').forEach(tr => {
         tr.addEventListener('click', (ev) => {
-          // allow clicking link without double open
           if (ev.target && ev.target.tagName === 'A') return;
           const url = tr.getAttribute('data-url');
           if (url) window.open(url, '_blank', 'noopener');
