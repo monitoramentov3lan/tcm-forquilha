@@ -1,9 +1,13 @@
 {
-    "id": 1772624421,
-    "data_envio": "2026-03-04 08:40:21",
+    "id": 1772635731,
+    "data_envio": "2026-03-04 11:48:51",
     "acao": "reprocessar_todos",
-    "parametros": "20260302",
+    "parametros": "20260303",
     "alvos": [
-        "TODOS"
+        "viper",
+        "tcm-ribamar",
+        "tcm-raposa",
+        "tcm-forquilha",
+        "primor"
     ]
 }
