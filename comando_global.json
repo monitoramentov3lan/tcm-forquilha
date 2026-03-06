@@ -1,0 +1,22 @@
+{
+    "id": 1772797896,
+    "data_envio": "2026-03-06 08:51:36",
+    "acao": "reprocessar_todos",
+    "parametros": "20260305",
+    "alvos": [
+        "speed",
+        "matos",
+        "planeta",
+        "rio-negro",
+        "taguatur",
+        "tcc",
+        "tcv",
+        "uniao",
+        "via-sl",
+        "viper",
+        "primor",
+        "tcm-forquilha",
+        "tcm-raposa",
+        "tcm-ribamar"
+    ]
+}
