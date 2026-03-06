@@ -1,8 +1,8 @@
 {
-    "id": 1772806008,
-    "data_envio": "2026-03-06 11:06:48",
-    "acao": "reprocessar_todos",
-    "parametros": "20260305",
+    "id": 1772816960,
+    "data_envio": "2026-03-06 14:09:20",
+    "acao": "git_pull_restart",
+    "parametros": null,
     "alvos": [
         "TODOS"
     ]
