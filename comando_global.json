@@ -1,9 +1,12 @@
 {
-    "id": 1773228711,
-    "data_envio": "2026-03-11 08:31:51",
+    "id": 1773235104,
+    "data_envio": "2026-03-11 10:18:24",
     "acao": "reprocessar_todos",
     "parametros": "20260310",
     "alvos": [
-        "TODOS"
+        "speed",
+        "premium",
+        "taguatur",
+        "via-sl"
     ]
 }
