@@ -1,0 +1,14 @@
+{
+    "id": 1773658743,
+    "data_envio": "2026-03-16 07:59:03",
+    "acao": "reprocessar_todos",
+    "parametros": "20260315",
+    "alvos": [
+        "taguatur",
+        "via-sl",
+        "primor",
+        "tcm-forquilha",
+        "tcm-raposa",
+        "tcm-ribamar"
+    ]
+}
