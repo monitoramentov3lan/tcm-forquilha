@@ -1,10 +1,15 @@
 {
   "garagem": "RIO NEGRO",
-  "online": 19,
-  "offline": 0,
-  "last_update": "2026-03-19T23:21:58.969797-03:00",
+  "online": 9,
+  "offline": 11,
+  "last_update": "2026-03-20T00:23:05.760937-03:00",
   "panel_url": "https://monitoramentov3lan.github.io/rio-negro/COMUNICAÇÕES_RIO NEGRO.html",
   "tgs_history": [
+    {
+      "data": "19/03/2026",
+      "count": 31,
+      "filename": "TGs_20260319.txt"
+    },
     {
       "data": "18/03/2026",
       "count": 37,
