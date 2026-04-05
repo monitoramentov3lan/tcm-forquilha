@@ -1,10 +1,15 @@
 {
   "garagem": "VIA-SL",
-  "online": 50,
-  "offline": 3,
-  "last_update": "2026-04-04T23:34:27.246920-03:00",
+  "online": 45,
+  "offline": 6,
+  "last_update": "2026-04-05T00:34:46.204361-03:00",
   "panel_url": "https://monitoramentov3lan.github.io/via-sl/COMUNICAÇÕES_VIA-SL.html",
   "tgs_history": [
+    {
+      "data": "04/04/2026",
+      "count": 63,
+      "filename": "TGs_20260404.txt"
+    },
     {
       "data": "03/04/2026",
       "count": 59,
