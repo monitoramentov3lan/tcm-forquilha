@@ -1,0 +1,9 @@
+{
+    "id": 1775653187,
+    "data_envio": "2026-04-08 09:59:47",
+    "acao": "git_pull_restart",
+    "parametros": null,
+    "alvos": [
+        "TODOS"
+    ]
+}
