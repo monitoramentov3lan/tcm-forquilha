@@ -1,13 +1,13 @@
 {
   "garagem": "RATRANS",
-  "online": 0,
-  "offline": 71,
-  "last_update": "2026-04-08T23:59:52.485289-03:00",
+  "online": 69,
+  "offline": 2,
+  "last_update": "2026-04-09T00:59:44.152972-03:00",
   "panel_url": "https://monitoramentov3lan.github.io/ratrans/COMUNICAÇÕES_RATRANS.html",
   "tgs_history": [
     {
       "data": "08/04/2026",
-      "count": 134,
+      "count": 135,
       "filename": "TGs_20260408.txt"
     },
     {
