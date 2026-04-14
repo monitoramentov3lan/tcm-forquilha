@@ -1,8 +1,59 @@
 {
   "garagem": "TCM_FORQUILHA",
-  "online": 0,
-  "offline": "ERRO",
-  "last_update": "2026-04-13T20:51:48.837279-03:00",
-  "panel_url": "N/A",
-  "tgs_history": []
+  "online": 112,
+  "offline": 5,
+  "last_update": "2026-04-13T21:42:29.617209-03:00",
+  "panel_url": "https://monitoramentov3lan.github.io/tcm-forquilha/COMUNICAÇÕES_TCM_FORQUILHA.html",
+  "tgs_history": [
+    {
+      "data": "12/04/2026",
+      "count": 52,
+      "filename": "TGs_20260412.txt"
+    },
+    {
+      "data": "11/04/2026",
+      "count": 90,
+      "filename": "TGs_20260411.txt"
+    },
+    {
+      "data": "10/04/2026",
+      "count": 183,
+      "filename": "TGs_20260410.txt"
+    },
+    {
+      "data": "09/04/2026",
+      "count": 186,
+      "filename": "TGs_20260409.txt"
+    },
+    {
+      "data": "08/04/2026",
+      "count": 179,
+      "filename": "TGs_20260408.txt"
+    },
+    {
+      "data": "07/04/2026",
+      "count": 186,
+      "filename": "TGs_20260407.txt"
+    },
+    {
+      "data": "06/04/2026",
+      "count": 182,
+      "filename": "TGs_20260406.txt"
+    },
+    {
+      "data": "05/04/2026",
+      "count": 62,
+      "filename": "TGs_20260405.txt"
+    },
+    {
+      "data": "04/04/2026",
+      "count": 60,
+      "filename": "TGs_20260404.txt"
+    },
+    {
+      "data": "03/04/2026",
+      "count": 60,
+      "filename": "TGs_20260403.txt"
+    }
+  ]
 }
