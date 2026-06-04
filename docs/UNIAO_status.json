@@ -1,9 +1,9 @@
 {
   "garagem": "UNIAO",
-  "online": 1,
+  "online": 2,
   "offline": 0,
-  "last_update": "2026-06-04T11:55:32.297782-03:00",
-  "panel_url": "https://monitoramentov3lan.github.io/uniao/COMUNICAÇÕES_UNIAO.html",
+  "last_update": "2026-06-04T13:55:32.299998-03:00",
+  "panel_url": "ERRO_PUBLICACAO",
   "tgs_history": [
     {
       "data": "03/06/2026",
@@ -12,7 +12,7 @@
     },
     {
       "data": "02/06/2026",
-      "count": 1,
+      "count": 2,
       "filename": "TGs_20260602.txt"
     },
     {
