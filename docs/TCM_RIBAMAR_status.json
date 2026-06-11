@@ -1,0 +1,24 @@
+{
+  "garagem": "TCM_RIBAMAR",
+  "online": 33,
+  "offline": 3,
+  "last_update": "2026-06-11T17:49:18.060843-03:00",
+  "panel_url": "https://monitoramentov3lan.github.io/tcm-forquilha/COMUNICAÇÕES_TCM_RIBAMAR.html",
+  "tgs_history": [
+    {
+      "data": "10/06/2026",
+      "count": 57,
+      "filename": "TGs_20260610.txt"
+    },
+    {
+      "data": "09/06/2026",
+      "count": 23,
+      "filename": "TGs_20260609.txt"
+    },
+    {
+      "data": "08/06/2026",
+      "count": 0,
+      "filename": "N/A"
+    }
+  ]
+}
