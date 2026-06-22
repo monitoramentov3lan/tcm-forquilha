@@ -1,10 +1,15 @@
 {
   "garagem": "SPEED",
-  "online": 41,
-  "offline": 0,
-  "last_update": "2026-06-21T23:49:33.821385-03:00",
+  "online": 39,
+  "offline": 1,
+  "last_update": "2026-06-22T00:49:44.634848-03:00",
   "panel_url": "ERRO_PUBLICACAO",
   "tgs_history": [
+    {
+      "data": "21/06/2026",
+      "count": 34,
+      "filename": "TGs_20260621.txt"
+    },
     {
       "data": "20/06/2026",
       "count": 68,
@@ -149,11 +154,6 @@
       "data": "23/05/2026",
       "count": 68,
       "filename": "TGs_20260523.txt"
-    },
-    {
-      "data": "22/05/2026",
-      "count": 73,
-      "filename": "TGs_20260522.txt"
     }
   ]
 }
