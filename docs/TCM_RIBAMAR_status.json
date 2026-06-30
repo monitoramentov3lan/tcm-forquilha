@@ -1,39 +1,24 @@
 {
   "garagem": "TCM_RIBAMAR",
-  "online": 34,
-  "offline": 11,
-  "last_update": "2026-06-16T09:15:56.224108-03:00",
+  "online": 32,
+  "offline": 4,
+  "last_update": "2026-06-30T08:01:24.276117-03:00",
   "panel_url": "https://monitoramentov3lan.github.io/tcm-forquilha/COMUNICAÇÕES_TCM_RIBAMAR.html",
   "tgs_history": [
     {
-      "data": "15/06/2026",
-      "count": 64,
-      "filename": "TGs_20260615.txt"
+      "data": "29/06/2026",
+      "count": 27,
+      "filename": "TGs_20260629.txt"
     },
     {
-      "data": "14/06/2026",
-      "count": 30,
-      "filename": "TGs_20260614.txt"
+      "data": "28/06/2026",
+      "count": 31,
+      "filename": "TGs_20260628.txt"
     },
     {
-      "data": "13/06/2026",
-      "count": 34,
-      "filename": "TGs_20260613.txt"
-    },
-    {
-      "data": "10/06/2026",
-      "count": 57,
-      "filename": "TGs_20260610.txt"
-    },
-    {
-      "data": "09/06/2026",
-      "count": 23,
-      "filename": "TGs_20260609.txt"
-    },
-    {
-      "data": "08/06/2026",
-      "count": 0,
-      "filename": "N/A"
+      "data": "27/06/2026",
+      "count": 39,
+      "filename": "TGs_20260627.txt"
     }
   ]
 }
