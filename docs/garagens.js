@@ -22,6 +22,7 @@ const GARAGENS = [
 "TPG",
 "TSC",
 "UNIAO",
+"GLV",    
 "VIPER",
 "ZURIQUE",
 "TCM_FORQUILHA",
