@@ -1,14 +1,9 @@
 {
-    "id": 1784906572,
-    "data_envio": "2026-07-24 12:22:52",
+    "id": 1784983387,
+    "data_envio": "2026-07-25 09:43:07",
     "acao": "reprocessar_todos",
-    "parametros": "20260723",
+    "parametros": "20260724",
     "alvos": [
-        "matos",
-        "speed",
-        "tcm-forquilha",
-        "tcm-raposa",
-        "planeta",
-        "taguatur"
+        "TODOS"
     ]
 }
