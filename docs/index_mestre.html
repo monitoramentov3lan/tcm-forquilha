@@ -25,6 +25,9 @@
       transition: background 0.2s;
     }
     .date-control button:hover { background-color: #2980b9; }
+    .date-control button.export-btn { background-color: #27ae60; }
+    .date-control button.export-btn:hover { background-color: #219150; }
+    .date-control button:disabled { background-color: #95a5a6; cursor: wait; }
 
     /* Tabela */
     table { width: 100%; max-width: 1200px; margin: 0 auto; border-collapse: collapse; background-color: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -49,6 +52,8 @@
     a:hover { text-decoration: underline; }
 
     .total-row { background-color: #34495e; color: white; font-weight: bold; }
+
+    .export-status { max-width: 1200px; margin: 10px auto 0; font-size: 0.85em; color: #7f8c8d; text-align: right; min-height: 1.2em; }
   </style>
 </head>
 
@@ -62,6 +67,7 @@
       <label for="date-selector">📅 Visualizar TGs do dia:</label>
       <input type="date" id="date-selector">
       <button onclick="renderTable()">Atualizar</button>
+      <button class="export-btn" id="btn-export-csv" onclick="exportarCSV()">📥 Exportar CSV</button>
     </div>
   </div>
 
@@ -81,6 +87,8 @@
       <tr><td colspan="7">Carregando dados....</td></tr>
     </tbody>
   </table>
+
+  <div class="export-status" id="export-status-text"></div>
 
   <script src="garagens.js"></script>
 
@@ -221,6 +229,132 @@
           <td class="tg-column-cell">${totalTGs}</td>
           <td colspan="2"></td>
         </tr>`;
+    }
+
+    // ==============================================================
+    // EXPORTAÇÃO CSV: resumo por garagem + listagem completa de TGs
+    // ==============================================================
+
+    function csvEscape(valor) {
+      const s = (valor === null || valor === undefined) ? '' : String(valor);
+      if (s.includes(';') || s.includes('"') || s.includes('\n')) {
+        return '"' + s.replace(/"/g, '""') + '"';
+      }
+      return s;
+    }
+
+    function linhaCSV(campos) {
+      return campos.map(csvEscape).join(';');
+    }
+
+    async function buscarListaTGsDaGaragem(filename) {
+      // Retorna a lista de nomes de arquivo TG (um por linha no .txt publicado).
+      // Mesma origem do index_mestre.html, então não há problema de CORS.
+      try {
+        const resp = await fetch(`${filename}?t=${Date.now()}`);
+        if (!resp.ok) return { ok: false, erro: `HTTP ${resp.status}`, nomes: [] };
+        const texto = await resp.text();
+        const nomes = texto.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+        return { ok: true, erro: null, nomes };
+      } catch (e) {
+        return { ok: false, erro: e.message || 'falha ao buscar', nomes: [] };
+      }
+    }
+
+    async function exportarCSV() {
+      const selectedDateISO = document.getElementById('date-selector').value;
+      const targetDateBR = formatInputToJSONDate(selectedDateISO);
+      const statusEl = document.getElementById('export-status-text');
+      const btn = document.getElementById('btn-export-csv');
+
+      if (!targetDateBR) {
+        alert('Selecione uma data válida antes de exportar.');
+        return;
+      }
+      if (!GLOBAL_DATA.length) {
+        alert('Os dados das garagens ainda não foram carregados. Aguarde e tente novamente.');
+        return;
+      }
+
+      btn.disabled = true;
+      const textoOriginal = btn.textContent;
+      btn.textContent = '⏳ Gerando...';
+      statusEl.textContent = '';
+
+      const linhasResumo = [];
+      const linhasDetalhe = [];
+      let totalOnline = 0, totalOffline = 0, totalTGs = 0;
+      let garagensComFalha = 0;
+
+      for (const item of GLOBAL_DATA) {
+        if (item.status === 'error' || !item.data) {
+          linhasResumo.push([item.name, 'Falha na leitura', '', '', '']);
+          garagensComFalha++;
+          continue;
+        }
+
+        const d = item.data;
+        const historyFound = (d.tgs_history || []).find(h => h.data === targetDateBR);
+        const count = historyFound ? (Number(historyFound.count) || 0) : 0;
+
+        totalOnline += Number(d.online) || 0;
+        totalOffline += Number(d.offline) || 0;
+        totalTGs += count;
+
+        linhasResumo.push([d.garagem, 'OK', d.online, d.offline, count]);
+
+        if (historyFound && historyFound.filename && historyFound.filename !== 'N/A') {
+          statusEl.textContent = `Baixando lista de TGs: ${d.garagem}...`;
+          const resultado = await buscarListaTGsDaGaragem(historyFound.filename);
+          if (resultado.ok) {
+            if (resultado.nomes.length === 0) {
+              linhasDetalhe.push([d.garagem, targetDateBR, '(arquivo de lista vazio)']);
+            }
+            for (const nomeArquivo of resultado.nomes) {
+              linhasDetalhe.push([d.garagem, targetDateBR, nomeArquivo]);
+            }
+          } else {
+            linhasDetalhe.push([d.garagem, targetDateBR, `(erro ao baixar lista: ${resultado.erro})`]);
+          }
+        } else if (count > 0) {
+          // Tinha contagem, mas sem arquivo publicado pra detalhar
+          linhasDetalhe.push([d.garagem, targetDateBR, '(sem arquivo detalhado publicado)']);
+        }
+      }
+
+      linhasResumo.push(['TOTAL GRUPO', '', totalOnline, totalOffline, totalTGs]);
+
+      const partes = [];
+      partes.push(`RESUMO POR GARAGEM - ${targetDateBR}`);
+      partes.push(linhaCSV(['Garagem', 'Status', 'Online', 'Offline', 'TGs']));
+      linhasResumo.forEach(r => partes.push(linhaCSV(r)));
+      partes.push('');
+      partes.push(`LISTAGEM COMPLETA DE TGS - ${targetDateBR}`);
+      partes.push(linhaCSV(['Garagem', 'Data', 'Arquivo TG']));
+      if (linhasDetalhe.length === 0) {
+        partes.push(linhaCSV(['(nenhum arquivo encontrado para essa data)', '', '']));
+      } else {
+        linhasDetalhe.forEach(r => partes.push(linhaCSV(r)));
+      }
+
+      // BOM no início para o Excel abrir acentuação corretamente
+      const csvContent = '\uFEFF' + partes.join('\r\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `TGs_Grupo_${selectedDateISO}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      statusEl.textContent = garagensComFalha > 0
+        ? `CSV gerado. ⚠️ ${garagensComFalha} garagem(ns) sem dados no momento.`
+        : 'CSV gerado com sucesso.';
+
+      btn.disabled = false;
+      btn.textContent = textoOriginal;
     }
   </script>
 
