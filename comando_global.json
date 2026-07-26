@@ -1,15 +1,9 @@
 {
-    "id": 1785064374,
-    "data_envio": "2026-07-26 08:12:54",
-    "acao": "reprocessar_todos",
-    "parametros": "20260725",
+    "id": 1785076776,
+    "data_envio": "2026-07-26 11:39:36",
+    "acao": "reiniciar_programas",
+    "parametros": null,
     "alvos": [
-        "inovare",
-        "primor",
-        "speed",
-        "taguatur",
-        "tcm-forquilha",
-        "tcm-raposa",
-        "viper"
+        "primor"
     ]
 }
