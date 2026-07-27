@@ -1,8 +1,8 @@
 {
-    "id": 1785077924,
-    "data_envio": "2026-07-26 11:58:44",
-    "acao": "listar_tgs",
-    "parametros": "25/07/2026",
+    "id": 1785149421,
+    "data_envio": "2026-07-27 07:50:21",
+    "acao": "reprocessar_todos",
+    "parametros": "20260726",
     "alvos": [
         "TODOS"
     ]
