@@ -1,9 +1,9 @@
 {
   "garagem": "TPG",
-  "online": 2,
+  "online": 0,
   "offline": 0,
-  "last_update": "2026-07-27T11:38:44.074687-03:00",
-  "panel_url": "ERRO_PUBLICACAO",
+  "panel_url": "N/A",
+  "last_update": "2026-07-27T11:44:00.052494-03:00",
   "tgs_history": [
     {
       "data": "26/07/2026",
