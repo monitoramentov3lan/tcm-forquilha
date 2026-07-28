@@ -1,9 +1,9 @@
 {
-    "id": 1785239828,
-    "data_envio": "2026-07-28 08:57:08",
+    "id": 1785240087,
+    "data_envio": "2026-07-28 09:01:27",
     "acao": "git_pull_restart",
     "parametros": null,
     "alvos": [
-        "TODOS"
+        "GLV"
     ]
 }
