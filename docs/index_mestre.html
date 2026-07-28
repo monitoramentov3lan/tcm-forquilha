@@ -107,7 +107,17 @@
       const minDate = new Date();
       minDate.setDate(today.getDate() - 30);
 
-      const formatDateISO = (d) => d.toISOString().split('T')[0];
+      // IMPORTANTE: toISOString() converte para UTC. Como o Brasil é UTC-3,
+      // entre ~21h e 23h59 (horário local) o UTC já virou o dia seguinte,
+      // fazendo a página achar que "hoje" já é amanhã. Por isso usamos os
+      // componentes de data LOCAIS (getFullYear/getMonth/getDate) em vez de
+      // toISOString().
+      const formatDateISO = (d) => {
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+      };
 
       dateInput.max = formatDateISO(today);
       dateInput.min = formatDateISO(minDate);
@@ -286,7 +296,10 @@
       btn.textContent = '⏳ Gerando...';
       statusEl.textContent = '';
 
-      const hojeISO = new Date().toISOString().split('T')[0];
+      // Mesmo cuidado de fuso horário do formatDateISO acima: usar data local,
+      // não toISOString() (que é UTC e "adianta" o dia à noite no Brasil).
+      const agora = new Date();
+      const hojeISO = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}-${String(agora.getDate()).padStart(2, '0')}`;
       const hojeBR = formatInputToJSONDate(hojeISO);
 
       const linhasResumo = [];
