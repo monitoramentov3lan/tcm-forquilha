@@ -1,7 +1,7 @@
 {
-    "id": 1785240748,
-    "data_envio": "2026-07-28 09:12:28",
-    "acao": "relatorio_tsk",
+    "id": 1785240926,
+    "data_envio": "2026-07-28 09:15:26",
+    "acao": "gerar_relatorio",
     "parametros": null,
     "alvos": [
         "TODOS"
