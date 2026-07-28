@@ -68,6 +68,10 @@
       <input type="date" id="date-selector">
       <button onclick="renderTable()">Atualizar</button>
       <button class="export-btn" id="btn-export-csv" onclick="exportarCSV()">📥 Exportar CSV</button>
+      <div style="font-size:0.78em; color:#7f8c8d; margin-top:8px;">
+        ℹ️ Online/Offline sempre mostram a situação de <strong>hoje</strong> (comunicou hoje = Online).
+        A data acima só filtra a coluna de TGs.
+      </div>
     </div>
   </div>
 
@@ -76,8 +80,8 @@
       <tr>
         <th width="10%">Status</th>
         <th width="25%">Garagem</th>
-        <th width="10%">Online</th>
-        <th width="10%">Offline</th>
+        <th width="10%">Online <br><small>(hoje)</small></th>
+        <th width="10%">Offline <br><small>(hoje)</small></th>
         <th class="tg-column" width="20%">TGs <br><small id="tg-header-date">(Selecione)</small></th>
         <th width="15%">Última Atualização</th>
         <th width="10%">Painel</th>
@@ -108,9 +112,10 @@
       dateInput.max = formatDateISO(today);
       dateInput.min = formatDateISO(minDate);
 
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      dateInput.value = formatDateISO(yesterday);
+      // O painel abre mostrando a situação de HOJE (online = comunicou hoje),
+      // consistente com o conceito usado no bot.pyw e no dashboard individual
+      // de cada garagem.
+      dateInput.value = formatDateISO(today);
 
       fetchAllData();
     });
@@ -281,6 +286,9 @@
       btn.textContent = '⏳ Gerando...';
       statusEl.textContent = '';
 
+      const hojeISO = new Date().toISOString().split('T')[0];
+      const hojeBR = formatInputToJSONDate(hojeISO);
+
       const linhasResumo = [];
       const linhasDetalhe = [];
       let totalOnline = 0, totalOffline = 0, totalTGs = 0;
@@ -325,8 +333,8 @@
       linhasResumo.push(['TOTAL GRUPO', '', totalOnline, totalOffline, totalTGs]);
 
       const partes = [];
-      partes.push(`RESUMO POR GARAGEM - ${targetDateBR}`);
-      partes.push(linhaCSV(['Garagem', 'Status', 'Online', 'Offline', 'TGs']));
+      partes.push(`RESUMO POR GARAGEM - Online/Offline: HOJE (${hojeBR}) | TGs: ${targetDateBR}`);
+      partes.push(linhaCSV(['Garagem', 'Status', 'Online (hoje)', 'Offline (hoje)', `TGs (${targetDateBR})`]));
       linhasResumo.forEach(r => partes.push(linhaCSV(r)));
       partes.push('');
       partes.push(`LISTAGEM COMPLETA DE TGS - ${targetDateBR}`);
