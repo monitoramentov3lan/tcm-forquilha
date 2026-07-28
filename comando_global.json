@@ -1,8 +1,8 @@
 {
-    "id": 1785163484,
-    "data_envio": "2026-07-27 11:44:44",
-    "acao": "listar_tgs",
-    "parametros": "26/07/2026",
+    "id": 1785239828,
+    "data_envio": "2026-07-28 08:57:08",
+    "acao": "git_pull_restart",
+    "parametros": null,
     "alvos": [
         "TODOS"
     ]
