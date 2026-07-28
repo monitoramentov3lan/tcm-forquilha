@@ -1,13 +1,13 @@
 {
   "garagem": "TCM_FORQUILHA",
-  "online": 112,
+  "online": 111,
   "offline": 29,
-  "last_update": "2026-07-28T15:56:46.239519-03:00",
+  "last_update": "2026-07-28T16:56:46.245943-03:00",
   "panel_url": "ERRO_PUBLICACAO",
   "tgs_history": [
     {
       "data": "28/07/2026",
-      "count": 25,
+      "count": 26,
       "filename": "TGs_TCM_FORQUILHA_20260728.txt"
     },
     {
