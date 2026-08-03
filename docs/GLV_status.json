@@ -2,13 +2,13 @@
   "garagem": "GLV",
   "online": 4,
   "offline": 0,
-  "last_update": "2026-08-03T15:11:30.712343-03:00",
+  "last_update": "2026-08-03T16:10:42.740302-03:00",
   "panel_url": "https://monitoramentov3lan.github.io/GLV/COMUNICAÇÕES_GLV.html",
   "tgs_history": [
     {
       "data": "03/08/2026",
-      "count": 0,
-      "filename": "N/A"
+      "count": 1,
+      "filename": "TGs_GLV_20260803.txt"
     },
     {
       "data": "02/08/2026",
