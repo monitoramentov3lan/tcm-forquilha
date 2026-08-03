@@ -2,12 +2,17 @@
   "garagem": "TCC",
   "online": 2,
   "offline": 1,
-  "last_update": "2026-08-02T22:55:43.935348-03:00",
+  "last_update": "2026-08-03T00:55:43.936927-03:00",
   "panel_url": "https://monitoramentov3lan.github.io/tcc/COMUNICAÇÕES_TCC.html",
   "tgs_history": [
     {
+      "data": "03/08/2026",
+      "count": 0,
+      "filename": "N/A"
+    },
+    {
       "data": "02/08/2026",
-      "count": 3,
+      "count": 4,
       "filename": "TGs_TCC_20260802.txt"
     },
     {
@@ -154,11 +159,6 @@
       "data": "04/07/2026",
       "count": 9,
       "filename": "TGs_20260704.txt"
-    },
-    {
-      "data": "03/07/2026",
-      "count": 14,
-      "filename": "TGs_20260703.txt"
     }
   ]
 }
