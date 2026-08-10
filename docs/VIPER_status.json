@@ -1,13 +1,18 @@
 {
   "garagem": "VIPER",
-  "online": 122,
-  "offline": 3,
-  "last_update": "2026-08-09T23:11:48.812489-03:00",
+  "online": 46,
+  "offline": 82,
+  "last_update": "2026-08-10T00:11:48.779866-03:00",
   "panel_url": "https://monitoramentov3lan.github.io/viper/COMUNICAÇÕES_VIPER.html",
   "tgs_history": [
     {
+      "data": "10/08/2026",
+      "count": 1,
+      "filename": "TGs_VIPER_20260810.txt"
+    },
+    {
       "data": "09/08/2026",
-      "count": 99,
+      "count": 104,
       "filename": "TGs_VIPER_20260809.txt"
     },
     {
@@ -154,11 +159,6 @@
       "data": "11/07/2026",
       "count": 143,
       "filename": "TGs_20260711.txt"
-    },
-    {
-      "data": "10/07/2026",
-      "count": 193,
-      "filename": "TGs_20260710.txt"
     }
   ]
 }
