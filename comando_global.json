@@ -1,7 +1,7 @@
 {
-    "id": 1787336447,
-    "data_envio": "2026-08-21 15:20:47",
-    "acao": "relatorio_tsk",
+    "id": 1787687932,
+    "data_envio": "2026-08-25 16:58:52",
+    "acao": "git_pull_restart",
     "parametros": null,
     "alvos": [
         "TODOS"
